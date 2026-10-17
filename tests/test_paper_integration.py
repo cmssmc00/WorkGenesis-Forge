@@ -232,6 +232,30 @@ class PaperIntegrationTests(unittest.TestCase):
         provider.save()
         return response, index
 
+    def test_author_only_real_stage_chain_stops_after_task_and_rubric(self):
+        self.config["campaign_mode"] = "author_only"
+        candidate = sources._candidate(SOURCE_URL, "Observation catalog")
+        with patch.object(paper_campaign, "plan_tasks", return_value=[self.plan]), \
+             patch.object(stirrup_runtime, "_new_exec_env", side_effect=self.sandbox), \
+             patch.object(runtime.Provider, "complete", autospec=True, side_effect=self.complete), \
+             patch.object(sources, "discover_sources", return_value=[candidate]), \
+             patch.object(sources, "download_source", side_effect=self.download), \
+             patch("socket.create_connection", side_effect=AssertionError("Network forbidden")):
+            state = paper_campaign.run_paper_campaign(self.config, self.out)
+            self.assertEqual(self.stages, ["researcher", "companion_author", "task_author"])
+            self.assertEqual(state["counts"]["authored_tasks"], 1)
+            self.assertEqual(state["counts"]["accepted_tasks"], 0)
+            self.assertEqual(state["counts"]["completed_trajectories"], 0)
+            calls = deepcopy(self.calls)
+            self.assertEqual(paper_campaign.run_paper_campaign(self.config, self.out), state)
+            self.assertEqual(self.calls, calls)
+        record = state["attempts"][0]
+        scenario = self.out / record["scenario"]
+        document = verify_bundle(scenario)
+        self.assertTrue(document["rubric"]["items"])
+        self.assertTrue((scenario / "public/companions/policy.md").is_file())
+        self.assertFalse(record["evaluated"])
+
     def test_real_stage_chain_repairs_only_rubric_then_collects_teacher_and_resumes(self):
         candidate = sources._candidate(SOURCE_URL, "Observation catalog")
         # The corpus scheduler itself is separately tested; use one explicit

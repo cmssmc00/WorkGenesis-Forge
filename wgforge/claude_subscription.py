@@ -26,6 +26,7 @@ from .sandbox import RuntimeErrorBase, canonical, digest
 
 
 MODEL = "claude-opus-5-5"
+FALLBACK_MODELS = ("claude-opus-5", "claude-opus-4-8")
 MINIMUM_CLI = (2, 1, 280)
 AUTH_FIELDS = ("loggedIn", "authMethod", "apiProvider", "subscriptionType")
 _SYSTEM = """You provide the next assistant decision for an external agent runtime.
@@ -62,8 +63,16 @@ def validate_subscription_config(config, offline=False):
     if any(key in config for key in ("api_key", "token", "authorization", "headers", "api_key_env", "endpoint")):
         raise SubscriptionError("Subscription configuration must not contain API credentials, key variables or endpoint overrides.")
     settings = config.get("subscription", {})
-    if not isinstance(settings, dict) or set(settings) - {"executable", "max_turns_per_call"}:
-        raise SubscriptionError("subscription accepts only executable and max_turns_per_call.")
+    if not isinstance(settings, dict) or set(settings) - {"executable", "max_turns_per_call", "fallback_models", "switch_models_on_flag"}:
+        raise SubscriptionError("Unsupported subscription setting.")
+    fallbacks = settings.get("fallback_models", [])
+    if (not isinstance(fallbacks, list) or any(not isinstance(name, str) or name not in FALLBACK_MODELS for name in fallbacks)
+            or len(set(fallbacks)) != len(fallbacks)):
+        raise SubscriptionError("subscription.fallback_models must list distinct supported Opus fallback model IDs.")
+    if type(settings.get("switch_models_on_flag", False)) is not bool:
+        raise SubscriptionError("subscription.switch_models_on_flag must be a boolean.")
+    if settings.get("switch_models_on_flag") and not set(FALLBACK_MODELS).issubset(fallbacks):
+        raise SubscriptionError("Automatic flagged-request fallback requires both official Opus fallback targets in fallback_models.")
     executable = settings.get("executable", "claude")
     if not isinstance(executable, str) or not executable.strip() or any(c in executable for c in "\x00\r\n"):
         raise SubscriptionError("subscription.executable must identify the official Claude CLI.")
@@ -77,7 +86,18 @@ def validate_subscription_config(config, offline=False):
     if config.get("context_compaction"):
         raise SubscriptionError("Use Stirrup's context compaction; no second local compaction adapter is supported.")
     if any(key in config for key in ("thinking", "fallback_model", "fallback_models")):
-        raise SubscriptionError("Subscription thinking/authentication are CLI-managed; model fallback is forbidden.")
+        raise SubscriptionError("Thinking/authentication are CLI-managed; configure fallback inside subscription settings.")
+
+
+def _allowed_models(config):
+    return {MODEL, *config.get("subscription", {}).get("fallback_models", [])}
+
+
+def _cli_settings(config):
+    settings = {"forceLoginMethod": "claudeai", "switchModelsOnFlag":
+                config.get("subscription", {}).get("switch_models_on_flag", False),
+                "availableModels": sorted(_allowed_models(config))}
+    return settings
 
 
 def _child_environment(config=None):
@@ -323,14 +343,21 @@ def _inspect_events(events, config):
     initial = [item for item in events if item.get("type") == "system" and item.get("subtype") == "init"]
     results = [item for item in events if item.get("type") == "result"]
     assistants = [item.get("message") for item in events if item.get("type") == "assistant"]
+    allowed_models = _allowed_models(config)
+    incomplete = []
+    observed_models = set()
     if len(initial) != 1 or initial[0].get("model") != MODEL or len(results) != 1 or not assistants:
         raise SubscriptionError("Claude CLI stream lacks a unique model identity, assistant response or final result.")
     if initial[0].get("mcp_servers") or any(name != "StructuredOutput" for name in initial[0].get("tools", [])):
         raise SubscriptionError("Claude CLI unexpectedly enabled executable tools or MCP servers.")
     by_id = {}
-    for assistant in assistants:
-        if not isinstance(assistant, dict) or assistant.get("model") != MODEL or not isinstance(assistant.get("id"), str):
+    for position, item in enumerate(events):
+        if item.get("type") != "assistant":
+            continue
+        assistant = item.get("message")
+        if not isinstance(assistant, dict) or assistant.get("model") not in allowed_models or not isinstance(assistant.get("id"), str):
             raise SubscriptionError("Claude CLI returned an unrequested or unidentified model.")
+        observed_models.add(assistant["model"])
         if not isinstance(assistant.get("content"), list):
             raise SubscriptionError("Claude CLI assistant content is malformed.")
         for block in assistant["content"]:
@@ -339,27 +366,41 @@ def _inspect_events(events, config):
             if block.get("type") == "tool_use" and block.get("name") != "StructuredOutput":
                 raise SubscriptionError("Claude CLI attempted an executable tool; only external Stirrup actions are allowed.")
         if assistant.get("stop_reason") in {"refusal", "pause_turn", "max_tokens", "model_context_window_exceeded"}:
-            raise SubscriptionError("Claude CLI did not complete its model response; no external actions accepted.")
+            incomplete.append((position, assistant["model"], assistant["stop_reason"]))
         by_id[assistant["id"]] = assistant
     # Native partial events can reveal a final stop reason absent from the
     # earlier assistant event. Never execute actions from a truncated response.
     latest_output = None
-    for item in events:
+    stream_model = MODEL
+    for position, item in enumerate(events):
         if item.get("type") != "stream_event":
             continue
         event = item.get("event", {})
         if event.get("type") == "message_start":
-            if event.get("message", {}).get("model") != MODEL:
+            stream_model = event.get("message", {}).get("model")
+            if stream_model not in allowed_models:
                 raise SubscriptionError("Claude CLI partial stream used an unrequested model.")
+            observed_models.add(stream_model)
             latest_output = None
         if event.get("type") == "message_delta":
             if event.get("delta", {}).get("stop_reason") in {"refusal", "pause_turn", "max_tokens", "model_context_window_exceeded"}:
-                raise SubscriptionError("Claude CLI partial stream ended without a usable completion.")
+                incomplete.append((position, stream_model, event["delta"]["stop_reason"]))
             if "output_tokens" in event.get("usage", {}):
                 latest_output = _nonnegative(event["usage"]["output_tokens"], "partial output tokens", True)
     result = results[0]
     if result.get("subtype") != "success" or result.get("is_error") is not False:
         raise SubscriptionError("Claude CLI reported a failed or limited run; no external actions accepted.")
+    # A declined primary response is never executed. Accept only the completed
+    # structured response after the official CLI switched to an allowed model.
+    for position, refused_model, reason in incomplete:
+        recovered = (reason == "refusal" and config.get("subscription", {}).get("switch_models_on_flag", False)
+                     and any(item.get("type") == "assistant"
+                             and item["message"]["model"] != refused_model
+                             and item["message"].get("stop_reason") not in
+                                 {"refusal", "pause_turn", "max_tokens", "model_context_window_exceeded"}
+                             for item in events[position + 1:]))
+        if not recovered:
+            raise SubscriptionError("Claude CLI did not complete its model response; no external actions accepted.")
     if any(item.get("type") in {"assistant", "stream_event", "user"} for item in events[events.index(result) + 1:]):
         raise SubscriptionError("Claude CLI emitted model activity after its final result.")
     internal_turns = _nonnegative(result.get("num_turns"), "num_turns", True)
@@ -367,14 +408,16 @@ def _inspect_events(events, config):
         raise SubscriptionError("Claude CLI exceeded its internal-turn allowance.")
     usage, prompt, completion = _usage(result.get("usage"))
     model_usage = result.get("modelUsage", {})
-    if not isinstance(model_usage, dict) or any(name != MODEL for name in model_usage):
+    if not isinstance(model_usage, dict) or any(name not in allowed_models for name in model_usage):
         raise SubscriptionError("Claude CLI modelUsage reports an unrequested helper or fallback model.")
     if model_usage:
-        total = model_usage[MODEL]
-        if not isinstance(total, dict):
-            raise SubscriptionError("Claude CLI model usage is malformed.")
-        model_prompt = sum(_nonnegative(total.get(key), key, True) for key in ("inputTokens", "cacheReadInputTokens", "cacheCreationInputTokens"))
-        model_output = _nonnegative(total.get("outputTokens"), "outputTokens", True)
+        model_prompt, model_output = 0, 0
+        for name, total in model_usage.items():
+            if not isinstance(total, dict):
+                raise SubscriptionError("Claude CLI model usage is malformed.")
+            model_prompt += sum(_nonnegative(total.get(key), key, True) for key in ("inputTokens", "cacheReadInputTokens", "cacheCreationInputTokens"))
+            model_output += _nonnegative(total.get("outputTokens"), "outputTokens", True)
+            observed_models.add(name)
         # modelUsage includes helpers/subagents; a CLI invocation is fresh, so
         # its cumulative counts cannot be attributed to an earlier session.
         if model_prompt < prompt or model_output < completion:
@@ -389,6 +432,8 @@ def _inspect_events(events, config):
                     "context_output_tokens": completion if latest_output is None else latest_output,
                     "context_output_basis": "aggregate_conservative" if latest_output is None else "last_message_delta",
                     "cli_internal_turns": internal_turns, "observed_model_requests": len(by_id),
+                    "provider_model": assistants[-1]["model"], "observed_models": sorted(observed_models),
+                    "fallback_used": bool(observed_models - {MODEL}),
                     "reported_cost_usd": cost, "cli_model_usage": copy.deepcopy(model_usage)}
 
 
@@ -506,7 +551,13 @@ class SubscriptionProvider:
         output_bound = self.budget["max_output_tokens"]
         reservation_tokens = internal_turns * (input_bound + internal_turns * output_bound)
         input_rate = anthropic.input_rate_bound(self.budget)
-        reservation = internal_turns * ((input_bound + (internal_turns - 1) * output_bound) * input_rate + output_bound * self.budget["output_usd_per_million"]) / 1_000_000
+        output_rate = self.budget["output_usd_per_million"]
+        fallback_count = len(self.config.get("subscription", {}).get("fallback_models", []))
+        if fallback_count:
+            # Opus 5/4.8: $5 input, $25 output, up to $10 for a 1h cache write.
+            input_rate, output_rate = max(input_rate, 10), max(output_rate, 25)
+        reservation_tokens *= 1 + fallback_count
+        reservation = (1 + fallback_count) * internal_turns * ((input_bound + (internal_turns - 1) * output_bound) * input_rate + output_bound * output_rate) / 1_000_000
         totals = self.totals()
         if totals["requests"] >= self.budget["max_requests"]:
             raise BudgetExceeded("Subscription invocation budget exhausted.")
@@ -520,6 +571,8 @@ class SubscriptionProvider:
         executable = _executable(self.config)
         record = {"index": len(self.state["requests"]), "status": "in_flight", "role": self.state.get("role", "unspecified"),
                   "provider_api": "claude_code_subscription", "requested_model": MODEL,
+                  "requested_effort": self.config.get("effort", "high"),
+                  "allowed_models": sorted(_allowed_models(self.config)),
                   "request_digest": digest({"event": event, "system": _SYSTEM, "schema": schema}),
                   "context_digest": digest(messages), "context_message_count": len(messages),
                   "input_token_bound": input_bound, "output_token_bound": output_bound,
@@ -556,8 +609,10 @@ class SubscriptionProvider:
                 "--effort", self.config.get("effort", "high"), "--input-format", "stream-json",
                 "--output-format", "stream-json", "--verbose", "--include-partial-messages",
                 "--json-schema", canonical(schema), "--system-prompt", _SYSTEM,
-                "--settings", '{"forceLoginMethod":"claudeai"}', "--max-turns", str(internal_turns),
+                "--settings", canonical(_cli_settings(self.config)), "--max-turns", str(internal_turns),
                 "--max-budget-usd", str(min(reservation, self.budget["max_cost_usd"] - totals["charged_upper_bound_usd"]))]
+        if fallback_count:
+            argv += ["--fallback-model", ",".join(self.config["subscription"]["fallback_models"])]
         try:
             result = _run_cli(argv, data, timeout_seconds=min(self.config.get("timeout_seconds", 60), remaining_time),
                               max_output_bytes=self.config.get("max_response_bytes", 4_000_000),
@@ -566,12 +621,18 @@ class SubscriptionProvider:
             _retain_reported_usage(record)
             failure_metadata, failure_message = _known_failure(record["cli_events"])
             record.update(failure_metadata)
-            if failure_message:
+            successful_terminal = any(item.get("type") == "result" and item.get("subtype") == "success"
+                                      and item.get("is_error") is False for item in record["cli_events"])
+            recovered_provider_error = (fallback_count and successful_terminal and result["returncode"] == 0
+                                        and failure_metadata.get("failure_class") == "cli_provider_error")
+            if failure_message and not recovered_provider_error:
                 raise SubscriptionError(failure_message)
             if result["returncode"] != 0:
                 raise SubscriptionError("Claude CLI returned an error; retained events require inspection before any new attempt.")
             final, usage = _inspect_events(record["cli_events"], self.config)
-            record.update(usage, provider_model=MODEL)
+            record.update(usage)
+            if recovered_provider_error:
+                record["recovered_provider_error"] = True
             # Even a rejected overrun must retain the actual aggregate estimate.
             record["charged_tokens"] = usage["prompt_tokens"] + usage["completion_tokens"]
             record["charged_usd"] = usage["reported_cost_usd"]

@@ -99,7 +99,8 @@ class SubscriptionTests(unittest.TestCase):
         self.assertEqual(argv[argv.index("--tools") + 1], "")
         self.assertEqual(argv[argv.index("--model") + 1], cs.MODEL)
         self.assertEqual(json.loads(argv[argv.index("--mcp-config") + 1]), {"mcpServers": {}})
-        self.assertEqual(json.loads(argv[argv.index("--settings") + 1]), {"forceLoginMethod": "claudeai"})
+        self.assertEqual(json.loads(argv[argv.index("--settings") + 1]),
+                         {"forceLoginMethod": "claudeai", "switchModelsOnFlag": False, "availableModels": [cs.MODEL]})
         self.assertEqual(self.state["requests"][0]["context_compaction_id"], 7)
         self.assertTrue(any(s["requests"][0]["status"] == "in_flight" for s in self.saves if s["requests"]))
 
@@ -309,6 +310,62 @@ class SubscriptionTests(unittest.TestCase):
             with self.subTest(change=change), self.assertRaises(cs.SubscriptionError):
                 self.provider().complete(MESSAGES)
             self.assertNotIn("message", self.state["requests"][0])
+
+    def test_max_fallback_uses_official_cli_and_records_both_models_once(self):
+        cfg = config(); cfg["effort"] = "max"
+        cfg["subscription"].update(fallback_models=list(cs.FALLBACK_MODELS), switch_models_on_flag=True)
+        stream = events()
+        refusal = copy.deepcopy(stream[1])
+        refusal["message"].update(id="declined", content=[], stop_reason="refusal")
+        stream[1]["message"].update(model="claude-opus-4-8", stop_reason="end_turn")
+        stream.insert(1, refusal)
+        stream.insert(2, {"type": "stream_event", "event": {"type": "message_start", "message": {"model": cs.MODEL}}})
+        stream.insert(3, {"type": "stream_event", "event": {"type": "message_delta", "delta": {"stop_reason": "refusal"}}})
+        stream.insert(4, {"type": "stream_event", "event": {"type": "message_start", "message": {"model": "claude-opus-4-8"}}})
+        stream[-1]["modelUsage"] = {
+            cs.MODEL: {"inputTokens": 100, "cacheReadInputTokens": 0, "cacheCreationInputTokens": 0, "outputTokens": 10},
+            "claude-opus-4-8": {"inputTokens": 100, "cacheReadInputTokens": 30, "cacheCreationInputTokens": 20, "outputTokens": 40}}
+        self.fake.responses = [stream]
+        self.provider(cfg).complete(MESSAGES)
+        argv = self.fake.model_calls[0][0]
+        self.assertEqual(argv[argv.index("--effort") + 1], "max")
+        self.assertEqual(argv[argv.index("--fallback-model") + 1], "claude-opus-5,claude-opus-4-8")
+        self.assertTrue(json.loads(argv[argv.index("--settings") + 1])["switchModelsOnFlag"])
+        receipt = self.state["requests"][0]
+        self.assertEqual(receipt["provider_model"], "claude-opus-4-8")
+        self.assertTrue(receipt["fallback_used"])
+        self.assertEqual((receipt["prompt_tokens"], receipt["completion_tokens"]), (250, 50))
+        self.assertEqual(receipt["observed_model_requests"], 2)
+
+    def test_availability_fallback_can_recover_provider_error(self):
+        cfg = config(); cfg["subscription"]["fallback_models"] = ["claude-opus-5"]
+        stream = events(); stream[1]["message"]["model"] = "claude-opus-5"
+        stream.insert(1, {"type": "system", "error": "overloaded_error"})
+        self.fake.responses = [stream]
+        self.provider(cfg).complete(MESSAGES)
+        self.assertTrue(self.state["requests"][0]["recovered_provider_error"])
+
+    def test_fallback_does_not_accept_final_refusal_foreign_model_or_native_tools(self):
+        cfg = config()
+        cfg["subscription"].update(fallback_models=list(cs.FALLBACK_MODELS), switch_models_on_flag=True)
+        for change in ("refusal", "foreign_model", "native_tool", "rate_limit"):
+            stream = events(); stream[1]["message"]["model"] = "claude-opus-4-8"
+            if change == "refusal": stream[1]["message"]["stop_reason"] = "refusal"
+            elif change == "foreign_model": stream[1]["message"]["model"] = "claude-sonnet-5-5"
+            elif change == "native_tool": stream[1]["message"]["content"][0]["name"] = "Bash"
+            else: stream.insert(1, {"type": "system", "error": "rate_limit"})
+            self.fake.responses = [stream]; self.state = {"requests": []}
+            with self.subTest(change=change), self.assertRaises(cs.SubscriptionError):
+                self.provider(cfg).complete(MESSAGES)
+            self.assertNotIn("message", self.state["requests"][0])
+
+    def test_fallback_settings_validate_exact_models(self):
+        for settings in ({"fallback_models": "opus"}, {"fallback_models": ["sonnet"]},
+                         {"fallback_models": [cs.MODEL]}, {"switch_models_on_flag": True},
+                         {"switch_models_on_flag": "true"}):
+            cfg = config(); cfg["subscription"].update(settings)
+            with self.subTest(settings=settings), self.assertRaises(cs.SubscriptionError):
+                self.provider(cfg)
 
     def test_cli_tools_and_undeclared_external_actions_are_rejected(self):
         streams = []

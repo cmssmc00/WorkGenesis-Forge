@@ -24,11 +24,15 @@ class CodexLauncherTests(unittest.TestCase):
         for directory in ('scripts', '.venv/bin', 'bin', 'configs'):
             (self.root / directory).mkdir(parents=True)
         shutil.copyfile(ROOT / 'scripts/run_codex_subscription.sh', self.root / 'scripts/run_codex_subscription.sh')
+        shutil.copyfile(ROOT / 'scripts/run_codex_parallel.sh', self.root / 'scripts/run_codex_parallel.sh')
         stub = '''import json, os, sys
 from pathlib import Path
 a = sys.argv[1:]
 p = Path(os.environ['LAUNCHER_TEST_ROOT'])
-if a[:2] == ['-m', 'wgforge']:
+if a[:2] == ['-m', 'wgforge.parallel']:
+    if a[2] == 'count': print('3')
+    else: (p / 'parallel.json').write_text(json.dumps({'args': a, 'image': os.environ['WGFORGE_PAPER_IMAGE']}))
+elif a[:2] == ['-m', 'wgforge']:
     if a[2] == 'preflight':
         print(json.dumps({'ready_for_operator_live_check': os.environ.get('TEST_READY', '1') == '1'}))
     elif a[2] == 'campaign':
@@ -65,6 +69,8 @@ else:
                     'LAUNCHER_TEST_ROOT': str(self.root), 'SERPAPI_API_KEY': 'offline-placeholder',
                     'HTTPS_PROXY': 'http://127.0.0.1:9'}
         self.env.pop('WGFORGE_PAPER_IMAGE', None)
+        self.env.pop('WGFORGE_PARALLEL_MODE', None)
+        self.env.pop('WGFORGE_PARALLEL_RESUME', None)
 
     def run_launcher(self, *args, **changes):
         result = subprocess.run(['bash', str(self.root / 'scripts/run_codex_subscription.sh'), *args],
@@ -143,6 +149,27 @@ else:
         self.assertEqual(self.run_launcher('0').returncode, 2)
         self.assertFalse((self.root / 'image-reference.txt').exists())
         self.assertFalse((self.root / 'runs').exists())
+
+    def test_parallel_wrapper_defaults_to_200_total_tasks(self):
+        result = subprocess.run(['bash', str(self.root / 'scripts/run_codex_parallel.sh')],
+                                env=self.env, capture_output=True, text=True, timeout=10)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        record = json.loads((self.root / 'parallel.json').read_text())
+        self.assertEqual(record['args'][2], 'new')
+        self.assertEqual(record['args'][record['args'].index('--count') + 1], '200')
+        self.assertEqual(record['image'], PINNED)
+        self.assertFalse((self.root / 'campaign.json').exists())
+
+    def test_parallel_resume_uses_existing_directory(self):
+        batch = self.root / 'saved-batch'
+        batch.mkdir()
+        result = subprocess.run(['bash', str(self.root / 'scripts/run_codex_parallel.sh'), '--resume', str(batch)],
+                                env=self.env, capture_output=True, text=True, timeout=10)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        record = json.loads((self.root / 'parallel.json').read_text())
+        self.assertEqual(record['args'][2], 'resume')
+        self.assertEqual(Path(record['args'][record['args'].index('--out') + 1]).resolve(), batch.resolve())
+        self.assertEqual(list((self.root / 'runs').iterdir()), [])
 
 
 if __name__ == '__main__':

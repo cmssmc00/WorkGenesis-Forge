@@ -4,6 +4,7 @@ from __future__ import annotations
 from copy import deepcopy
 from pathlib import Path
 import os
+import time
 
 from .common import ForgeError, canonical, digest, now, read_json, sha256, write_json
 from .planning import plan_tasks, compact_plans, hydrate_plan
@@ -11,11 +12,12 @@ from .materialize import verify_bundle
 from .workflow import (UnsuitableSource, aggregate_usage, author_scenario, evolve_scenario,
                        solver_role, validate_run_binding, verify_terminal_workflow)
 from .paper_acquisition import collect_paper_anchors, lineage_memory
-from .sources import load_source_manifest
+from .sources import SearchUnavailable, load_source_manifest
 
 
 def _counts(state):
     return {"target_tasks": len(state["plans"]),
+            "authored_tasks": sum(row["status"] == "authored_unverified" for row in state["attempts"]),
             "accepted_tasks": sum(row["status"] == "accepted" for row in state["attempts"]),
             "discarded_scenarios": sum(row["status"] == "discarded" for row in state["attempts"]),
             "acquisition_failures": sum(row["status"] == "source_unavailable" for row in state["attempts"]),
@@ -29,6 +31,14 @@ def _accepted_bundle(out, record):
     relative = Path(result["accepted_scenario"])
     scenario = relative if relative.is_absolute() else evolution / relative
     verify_bundle(scenario)
+    return scenario
+
+
+def _authored_bundle(out, record):
+    scenario = out / record["scenario"]
+    verify_bundle(scenario)
+    if read_json(scenario / "manifest.json")["bundle_digest"] != record["bundle_digest"]:
+        raise ForgeError("An authored task changed after it was recorded")
     return scenario
 
 
@@ -57,6 +67,19 @@ def collect_demonstration(config, out, record):
 
 
 def _write_dataset_index(out, state):
+    if state.get("campaign_mode") == "author_only":
+        tasks = []
+        for record in state["attempts"]:
+            if record["status"] == "authored_unverified":
+                scenario = _authored_bundle(out, record)
+                tasks.append({"scenario_id": record["scenario_id"], "plan_id": record["plan_id"],
+                              "scenario": str(scenario.relative_to(out)), "bundle_digest": record["bundle_digest"],
+                              "status": "authored_unverified", "evaluated": False})
+        index = {"count": len(tasks), "target": len(state["plans"]), "mode": "author_only",
+                 "evaluated": False, "teacher_trajectories": 0, "tasks": tasks}
+        write_json(out / "dataset" / "tasks.json", index)
+        write_json(out / "dataset" / "manifest.json", {k: v for k, v in index.items() if k != "tasks"})
+        return
     entries = []
     for record in state["attempts"]:
         if record.get("trajectory"):
@@ -82,12 +105,17 @@ def _write_dataset_index(out, state):
                "sft_tokenization": "Not inferred: the paper does not disclose exact serialization, filtering or loss masks"})
 
 
-def run_paper_campaign(config, out):
-    from .campaign import register_anchors
+def run_paper_campaign(config, out, *, schedule=None, registry_path=None):
+    from .campaign import AnchorConflict, register_anchors
     if config.get("approve_live") is not True:
         raise ForgeError("Paper campaigns require --approve-live; planning/preflight are offline")
     from .paper_profile import validate_paper_profile
     validate_paper_profile(config)
+    mode = config.get("campaign_mode", "full")
+    if mode not in {"full", "author_only"}:
+        raise ForgeError("campaign_mode must be full or author_only")
+    author_only = mode == "author_only"
+    target_status = "authored_unverified" if author_only else "accepted"
     out = Path(out).absolute()
     out.mkdir(parents=True, exist_ok=True)
     lock = out / ".campaign.lock"
@@ -104,21 +132,33 @@ def run_paper_campaign(config, out):
             state = read_json(path)
             if state["config_digest"] != fingerprint:
                 raise ForgeError("Campaign configuration changed; use a new output directory")
+            if schedule is not None and (state["plans"] != schedule["plans"] or state["playbooks"] != schedule["playbooks"]):
+                raise ForgeError("Worker occupation assignment changed; use a new batch directory")
+            if state.get("shared_registry") != (str(Path(registry_path).absolute()) if registry_path is not None else None):
+                raise ForgeError("Campaign registry changed; reuse the original batch directory")
         else:
-            schedule = compact_plans(plan_tasks(config))
-            state = {"version": 2, "protocol": "paper_v1", "config_digest": fingerprint,
+            schedule = schedule if schedule is not None else compact_plans(plan_tasks(config))
+            state = {"version": 2, "protocol": "paper_v1", "campaign_mode": mode, "config_digest": fingerprint,
                      "lineage_id": config.get("lineage_id", "campaign-" + fingerprint[:16]),
                      "plans": schedule["plans"], "playbooks": schedule["playbooks"],
                      "attempts": [], "finished_plan_ids": [], "active_attempt": None,
                      "status": "running", "created_at": now()}
+            if registry_path is not None:
+                state["shared_registry"] = str(Path(registry_path).absolute())
             transport = next(iter(config.get("roles", {}).values()), {}).get("provider")
             if transport in {"claude_subscription", "codex_subscription"}:
                 cli_name = "Claude Code" if transport == "claude_subscription" else "Codex CLI"
                 state.update(model_transport=transport, outer_harness="official_stirrup",
                     reproduction_note="Paper stages retained; official " + cli_name + " subscription uses serialized-history/structured-action bridging",
                     billing_note="USD workload estimates do not measure subscription bills or remaining quota")
+            if author_only:
+                state.update(evaluated=False, reproduction_note="Only discovery, companion authoring and task/rubric authoring are run; no solve, evaluation, attribution, repair or teacher collection")
             write_json(path, state)
-        collection = config.get("trajectory_collection", {}).get("enabled", True)
+        collection = not author_only and config.get("trajectory_collection", {}).get("enabled", True)
+        if author_only:
+            for record in state["attempts"]:
+                if record["status"] == "authored_unverified":
+                    _authored_bundle(out, record)
         if state["status"] == "completed":
             for record in state["attempts"]:
                 if record["status"] == "accepted":
@@ -127,7 +167,7 @@ def run_paper_campaign(config, out):
                         collect_demonstration(config, out, record)
             return state
         state["status"] = "running"
-        registry = out / "lineage_registry.json"
+        registry = Path(registry_path) if registry_path is not None else out / "lineage_registry.json"
         maximum = config.get("construction", {}).get("max_attempts_per_plan")
         if maximum is not None and (type(maximum) is not int or maximum < 1):
             raise ForgeError("max_attempts_per_plan must be null or a positive operational limit")
@@ -136,7 +176,7 @@ def run_paper_campaign(config, out):
             if plan["plan_id"] in state["finished_plan_ids"]:
                 continue
             previous = [row for row in state["attempts"] if row["plan_id"] == plan["plan_id"]]
-            accepted = next((row for row in previous if row["status"] == "accepted"), None)
+            accepted = next((row for row in previous if row["status"] == target_status), None)
             while accepted is None:
                 number = len(previous)
                 if maximum is not None and number >= maximum:
@@ -158,18 +198,28 @@ def run_paper_campaign(config, out):
                 sources = []
                 try:
                     manifest_path = collect_paper_anchors(construction_plan, task_root / "acquisition", config,
-                                                         registry, state["lineage_id"], sid)
+                                                         registry, state["lineage_id"], sid,
+                                                         **({"campaign_root": out} if registry_path is not None else {}))
                     manifest = load_source_manifest(manifest_path)
                     sources = manifest["sources"]
                     initial = author_scenario(construction_plan, manifest, manifest_path.parent,
                                               task_root / "synthesis", config, scenario_id=sid,
                                               lineage_id=state["lineage_id"], campaign_root=out)
-                    result = evolve_scenario(initial, task_root / "evolution", config, campaign_root=out)
-                    if result["status"] not in {"accepted", "discarded"}:
+                    if author_only:
+                        verify_bundle(initial)
+                        result = {"status": "authored_unverified", "evaluated": False,
+                                  "scenario": str(Path(initial).relative_to(out)),
+                                  "bundle_digest": read_json(Path(initial) / "manifest.json")["bundle_digest"]}
+                        write_json(task_root / "authorship.json", result)
+                    else:
+                        result = evolve_scenario(initial, task_root / "evolution", config, campaign_root=out)
+                    if result["status"] not in {target_status, "discarded"}:
                         state.update(status="incomplete", stop_reason=result.get("reason", result["status"]))
                         break
-                except UnsuitableSource as error:
+                except (UnsuitableSource, AnchorConflict, SearchUnavailable) as error:
                     result = {"status": "discarded" if sources else "source_unavailable", "reason": str(error)}
+                    if isinstance(error, SearchUnavailable):
+                        result["failure_kind"] = "temporary_search_failure"
                     write_json(task_root / "evolution" / "workflow.json", result)
                 summary = {"occupation": plan["profession"], "instruction": plan.get("instruction", ""),
                            "outcome": result["status"]}
@@ -183,14 +233,26 @@ def run_paper_campaign(config, out):
                                    deliverables=document["request"]["deliverables"])
                 if sources:
                     register_anchors(registry, state["lineage_id"], sid, sources, result["status"], scenario_summary=summary)
-                record = {"plan_id": plan["plan_id"], "scenario_id": sid, "attempt": number,
-                          "status": result["status"], "workflow": str((task_root / "evolution/workflow.json").relative_to(out))}
+                record = {"plan_id": plan["plan_id"], "scenario_id": sid, "attempt": number, "status": result["status"]}
+                if result.get("failure_kind"):
+                    record["failure_kind"] = result["failure_kind"]
+                if result["status"] == "authored_unverified":
+                    record.update(scenario=result["scenario"], bundle_digest=result["bundle_digest"], evaluated=False,
+                                  authorship=str((task_root / "authorship.json").relative_to(out)))
+                else:
+                    record["workflow"] = str((task_root / "evolution/workflow.json").relative_to(out))
                 state["attempts"].append(record)
                 state["active_attempt"] = None
                 previous.append(record)
                 state["counts"] = _counts(state)
                 write_json(path, state)
-                if result["status"] == "accepted":
+                if result.get("failure_kind") == "temporary_search_failure":
+                    if len(previous) >= 3 and all(row.get("failure_kind") == "temporary_search_failure" for row in previous[-3:]):
+                        state.update(status="incomplete", stop_reason="search_service_unavailable_after_three_attempts")
+                        break
+                    print("Search service temporarily unavailable; retaining failed receipts and retrying this plan in 10 seconds.", flush=True)
+                    time.sleep(10)
+                if result["status"] == target_status:
                     accepted = record
             if accepted is None:
                 break
@@ -201,7 +263,7 @@ def run_paper_campaign(config, out):
             write_json(path, state)
             _write_dataset_index(out, state)
         if len(state["finished_plan_ids"]) == len(state["plans"]):
-            state.update(status="completed", stop_reason="accepted_target_and_requested_trajectories_reached")
+            state.update(status="completed", stop_reason="authored_unverified_target_reached" if author_only else "accepted_target_and_requested_trajectories_reached")
         state.update(counts=_counts(state), usage=aggregate_usage(out))
         write_json(path, state)
         _write_dataset_index(out, state)

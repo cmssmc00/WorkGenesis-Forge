@@ -5,12 +5,23 @@ from pathlib import Path
 import os
 from urllib.parse import urlsplit
 from .common import ForgeError, digest, now, read_json, write_json
+from .file_lock import file_lock
 from .planning import plan_tasks
 from .sources import discover_sources, download_source, load_source_manifest
 from .workflow import UnsuitableSource, aggregate_usage, author_scenario, evolve_scenario, verify_terminal_workflow
 
 
+class AnchorConflict(ForgeError):
+    """Another scenario reserved this source before this one could register it."""
+
+
 def register_anchors(registry_path, lineage_id, scenario_id, sources, status="reserved", scenario_summary=None):
+    registry_path = Path(registry_path)
+    with file_lock(registry_path.with_suffix(".lock")):
+        return _register_anchors(registry_path, lineage_id, scenario_id, sources, status, scenario_summary)
+
+
+def _register_anchors(registry_path, lineage_id, scenario_id, sources, status, scenario_summary):
     registry_path = Path(registry_path)
     registry = read_json(registry_path) if registry_path.exists() else {"version": 1, "entries": []}
     hashes = {s["sha256"] for s in sources}
@@ -27,7 +38,7 @@ def register_anchors(registry_path, lineage_id, scenario_id, sources, status="re
             write_json(registry_path, registry)
             return entry
         if hashes & set(entry["sha256"]) or urls & set(entry["urls"]):
-            raise ForgeError("Anchor URL/hash already consumed by another scenario in this lineage, including discarded attempts")
+            raise AnchorConflict("Anchor URL/hash already consumed by another scenario in this lineage, including discarded attempts")
     entry = {"lineage_id": lineage_id, "scenario_id": scenario_id, "sha256": sorted(hashes), "urls": sorted(urls),
              "source_summaries": [{"id": s["id"], "title": s.get("title", ""), "rights_status": s["rights_status"]} for s in sources],
              "source_entries": [{"source_page_url": s.get("source_page_url", s["url"]), "download_url": s["url"],

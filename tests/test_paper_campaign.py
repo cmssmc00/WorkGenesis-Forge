@@ -29,6 +29,38 @@ def source_record(root, number=0):
 
 
 class PaperCampaignTests(unittest.TestCase):
+    def test_temporary_search_failure_retries_new_attempt_without_rebuilding_saved_task(self):
+        self.config["campaign_mode"] = "author_only"
+        failed = False
+        def acquire(*args, **kwargs):
+            nonlocal failed
+            if args[0]["plan_id"] == "plan-1" and not failed:
+                failed = True
+                write_json(Path(args[1]) / "failed_receipt.json", {"http_status": 503, "status": "uncertain"})
+                raise pc.SearchUnavailable("HTTP 503")
+            return self.acquire(*args, **kwargs)
+        with patch.object(pc, "collect_paper_anchors", side_effect=acquire), patch.object(pc.time, "sleep"):
+            state = pc.run_paper_campaign(self.config, self.out)
+        self.assertEqual(state["counts"]["authored_tasks"], 2)
+        self.assertEqual([r["status"] for r in state["attempts"]], ["authored_unverified", "source_unavailable", "authored_unverified"])
+        self.assertEqual(len([e for e in self.events if e[0] == "author"]), 2)
+        receipt = self.out / "tasks" / state["attempts"][1]["scenario_id"] / "acquisition/failed_receipt.json"
+        self.assertEqual(read_json(receipt)["http_status"], 503)
+        self.assertNotEqual(state["attempts"][1]["scenario_id"], state["attempts"][2]["scenario_id"])
+
+    def test_search_outage_stops_after_three_attempts_and_keeps_completed_tasks(self):
+        self.config["campaign_mode"] = "author_only"
+        def acquire(*args, **kwargs):
+            if args[0]["plan_id"] == "plan-1":
+                raise pc.SearchUnavailable("HTTP 503")
+            return self.acquire(*args, **kwargs)
+        with patch.object(pc, "collect_paper_anchors", side_effect=acquire), patch.object(pc.time, "sleep") as sleep:
+            state = pc.run_paper_campaign(self.config, self.out)
+        self.assertEqual(state["counts"]["authored_tasks"], 1)
+        self.assertEqual(state["stop_reason"], "search_service_unavailable_after_three_attempts")
+        self.assertEqual(len(state["attempts"]), 4)
+        self.assertEqual(sleep.call_count, 2)
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name)
@@ -57,7 +89,7 @@ class PaperCampaignTests(unittest.TestCase):
         self.stack.close()
         self.temp.cleanup()
 
-    def acquire(self, plan, out, config, registry, lineage, sid):
+    def acquire(self, plan, out, config, registry, lineage, sid, **kwargs):
         self.events.append(("acquire", sid))
         self.acquisitions.append({"plan": deepcopy(plan), "sid": sid, "out": out})
         source = source_record(out, len(self.acquisitions))
@@ -135,6 +167,87 @@ class PaperCampaignTests(unittest.TestCase):
         self.assertEqual(self.events, events)
         self.assertEqual(len(self.acquisitions), 2)
 
+    def test_author_only_never_evaluates_or_collects_teacher_and_reuses_results(self):
+        self.config["campaign_mode"] = "author_only"
+        # Even an inherited enabled teacher setting cannot override author-only.
+        with patch.object(pc, "evolve_scenario", side_effect=AssertionError("Evaluation forbidden")) as evolve, \
+             patch.object(pc, "solver_role", side_effect=AssertionError("Teacher forbidden")) as teacher:
+            state = pc.run_paper_campaign(self.config, self.out)
+            self.assertEqual(state["counts"]["authored_tasks"], 2)
+            self.assertEqual(state["counts"]["accepted_tasks"], 0)
+            self.assertEqual(state["counts"]["completed_trajectories"], 0)
+            self.assertEqual(state["status"], "completed")
+            self.assertFalse(state["evaluated"])
+            events = deepcopy(self.events)
+            self.assertEqual(pc.run_paper_campaign(self.config, self.out), state)
+            self.assertEqual(self.events, events)
+            evolve.assert_not_called()
+            teacher.assert_not_called()
+        index = read_json(self.out / "dataset/tasks.json")
+        self.assertEqual(index["count"], 2)
+        self.assertTrue(all(t["status"] == "authored_unverified" for t in index["tasks"]))
+        self.assertFalse(list(self.out.rglob("evolution")))
+        self.assertFalse((self.out / "dataset/trajectories.jsonl").exists())
+        bundle = self.out / state["attempts"][0]["scenario"] / "manifest.json"
+        write_json(bundle, {"bundle_digest": "changed"})
+        with self.assertRaisesRegex(ForgeError, "authored task changed"):
+            pc.run_paper_campaign(self.config, self.out)
+
+    def test_author_only_interruption_keeps_finished_task(self):
+        self.config["campaign_mode"] = "author_only"
+        def acquire(*args, **kwargs):
+            if args[0]["plan_id"] == "plan-1":
+                raise ForgeError("Network interrupted")
+            return self.acquire(*args, **kwargs)
+        with patch.object(pc, "collect_paper_anchors", side_effect=acquire):
+            with self.assertRaisesRegex(ForgeError, "Network interrupted"):
+                pc.run_paper_campaign(self.config, self.out)
+        saved = read_json(self.out / "campaign.json")
+        self.assertEqual(saved["counts"]["authored_tasks"], 1)
+        first = self.out / saved["attempts"][0]["scenario"] / "scenario.json"
+        before = sha256(first)
+        resumed = pc.run_paper_campaign(self.config, self.out)
+        self.assertEqual(resumed["counts"]["authored_tasks"], 2)
+        self.assertEqual(sha256(first), before)
+        self.assertEqual([e[0] for e in self.events], ["acquire", "author", "acquire", "author"])
+
+    def test_worker_schedule_is_used_and_completed_task_survives_next_failure(self):
+        schedule = {"plans": deepcopy(self.plans), "playbooks": {}}
+        registry = self.root / "shared.json"
+        real_acquire = self.acquire
+        def acquire(*args, **kwargs):
+            self.assertEqual(kwargs["campaign_root"], self.out)
+            if args[0]["plan_id"] == "plan-1":
+                raise ForgeError("Network interrupted")
+            return real_acquire(*args, **kwargs)
+        with patch.object(pc, "collect_paper_anchors", side_effect=acquire), patch.object(pc, "plan_tasks") as planner:
+            with self.assertRaisesRegex(ForgeError, "Network interrupted"):
+                pc.run_paper_campaign(self.config, self.out, schedule=schedule, registry_path=registry)
+            planner.assert_not_called()
+        state = read_json(self.out / "campaign.json")
+        self.assertEqual(state["finished_plan_ids"], ["plan-0"])
+        first_trace = self.out / state["attempts"][0]["trajectory"]
+        original_hash = sha256(first_trace)
+        resumed = pc.run_paper_campaign(self.config, self.out, schedule=schedule, registry_path=registry)
+        self.assertEqual(resumed["counts"]["finished_plans"], 2)
+        self.assertEqual(sha256(first_trace), original_hash)
+        self.assertEqual(len([e for e in self.events if e[0] == "teacher"]), 2)
+
+    def test_parallel_anchor_race_advances_to_new_attempt_without_duplicate(self):
+        from wgforge.campaign import AnchorConflict
+        self.plans = self.plans[:1]
+        calls = []
+        def acquire(*args):
+            calls.append(args[-1])
+            if len(calls) == 1:
+                raise AnchorConflict("Other worker reserved this source")
+            return self.acquire(*args)
+        with patch.object(pc, "collect_paper_anchors", side_effect=acquire):
+            result = pc.run_paper_campaign(self.config, self.out)
+        self.assertEqual(result["counts"]["finished_plans"], 1)
+        self.assertEqual(result["counts"]["acquisition_failures"], 1)
+        self.assertNotEqual(calls[0], calls[1])
+
     def test_teacher_interruption_keeps_acceptance_and_resumes_existing_trace(self):
         self.plans = self.plans[:1]
         self.teacher_interrupt = True
@@ -206,6 +319,12 @@ class PaperCampaignTests(unittest.TestCase):
 
 
 class AnchorSelectionTests(unittest.TestCase):
+    def test_unreadable_source_becomes_a_rejected_candidate(self):
+        with patch("wgforge.paper_acquisition.extract_artifact", side_effect=ValueError("Encrypted or oversized PDF")):
+            with self.assertRaisesRegex(UnsuitableSource, "Encrypted"):
+                validate_anchor_selection(self.response, self.root / "accepted", [])
+        self.assertFalse((self.root / "accepted").exists())
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name)

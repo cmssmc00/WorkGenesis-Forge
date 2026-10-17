@@ -281,9 +281,9 @@ class OfficialHarnessTests(unittest.TestCase):
             (out / downloaded["path"]).write_bytes(body)
             return downloaded
         self.cfg["stirrup"].update(web_enabled=True, sources={})
-        for code in ("network_connection_error", "network_timeout"):
+        for code in ("network_connection_error", "network_timeout", "provider_server_error"):
             with self.subTest(code=code), patch.object(sources, "download_source", side_effect=download), \
-                 patch.object(sources, "discover_sources", side_effect=sources.SearchError(code)) as search:
+                 patch.object(sources, "discover_sources", side_effect=sources.SearchError(code, 503 if code == "provider_server_error" else None)) as search:
                 result, calls = self.execute([
                     reply("web_fetch", {"url": downloaded["url"]}, "a"),
                     reply("web_search", {"query": "additional occupational evidence"}, "b"),
@@ -305,11 +305,20 @@ class OfficialHarnessTests(unittest.TestCase):
             self.assertEqual(receipt["failure"]["code"], code)
             self.assertEqual(receipt["continuation"], "existing_sources_only")
 
-    def test_search_still_stops_without_downloads_or_on_account_failure(self):
+    def test_transient_search_failures_without_downloads_are_retryable_with_durable_receipts(self):
         from wgforge import sources
-        for code, status, downloads in [("network_connection_error", None, []),
-                                        ("network_timeout", None, []),
-                                        ("quota_or_rate_limit", 429, [{"id": "existing"}]),
+        for code, status in [("provider_server_error", 503), ("network_timeout", None), ("network_connection_error", None)]:
+            state = {}
+            with self.subTest(code=code), patch.object(sources, "discover_sources", side_effect=sources.SearchError(code, status)):
+                tool = sr._web_tools(self.environment, "/workspace", self.root / "web", {"sources": {}}, state, lambda: None)[0]
+                with self.assertRaises(sources.SearchUnavailable):
+                    asyncio.run(tool.executor(tool.parameters(query="occupational evidence")))
+            self.assertEqual(state["search_requests"][0]["status"], "uncertain")
+            self.assertEqual(state["search_requests"][0]["failure"], {"code": code, "http_status": status})
+
+    def test_search_still_stops_on_account_failure(self):
+        from wgforge import sources
+        for code, status, downloads in [("quota_or_rate_limit", 429, [{"id": "existing"}]),
                                         ("authentication_or_access_denied", 401, [{"id": "existing"}])]:
             state = {"web_downloads": downloads}
             async def exercise():

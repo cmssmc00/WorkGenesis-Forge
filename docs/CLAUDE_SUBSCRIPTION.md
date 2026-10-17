@@ -4,9 +4,28 @@
 
 Anthropic 官方说明，Claude Agent SDK、`claude -p` 和第三方应用可以使用订阅额度。订阅额度有使用限制，并不等于无限调用；是否允许额外付费用量还取决于账号设置。依据：[Use the Claude Agent SDK with your Claude plan](https://support.claude.com/en/articles/15036540-use-the-claude-agent-sdk-with-your-claude-plan)，2026-10-15 核对。
 
-> Current default setup: [GPT-6 Astra subscription](../README.md). This file describes the retained Claude profile. Historical local image hashes below are evidence, not downloadable image addresses; build or load your own image using [docker/README.md](../docker/README.md).
+## 当前入口：Opus 5.5 max，单路串行，只造题
 
-## 入口配置
+新配置 [`claude_opus55_subscription_serial.json`](../configs/claude_opus55_subscription_serial.json) 默认生成 **200 个新任务**，一个接一个运行。只执行 `researcher → companion_author → task_author`，不做题、不评分、不归因、不改题、不采集 teacher 轨迹；保留文件格式和来源等基础校验，结果标记为 `authored_unverified`。
+
+```bash
+claude auth login
+bash scripts/run_claude_subscription.sh
+# 如只想先试一个新任务：
+bash scripts/run_claude_subscription.sh 1
+# 中断后沿用启动时打印的目录和保存的配置：
+bash scripts/run_claude_subscription.sh --resume runs/实际输出目录
+```
+
+脚本检查本机 Docker 镜像及 SerpAPI，只有终端缺少 `SERPAPI_API_KEY` 时才提示隐藏输入。每次不带 `--resume` 都新建目录，不修改已有任务；不能用这个入口恢复原来的 Codex 并行批次。失败或额度耗尽仍会停止并保留输出，尚未完成的请求不会自动重复发送。
+
+所有角色预设为 `claude_subscription`、`claude-opus-5-5`、`effort: max`，只有前三个角色会运行。`subscription.fallback_models` 为 `claude-opus-5`、`claude-opus-4-8`，`switch_models_on_flag: true`。官方 CLI 处理过载/不可用时的备用模型链，以及有官方备用路由的内容标记；拒绝若未恢复仍停止。主模型和备用模型都沿用明确指定的 `max`。每次调用记录 `requested_model`、`provider_model`、`observed_models`、`fallback_used` 和 `cli_model_usage`。不改写为“全部由 Opus 5.5 完成”。
+
+fallback 不绕过5小时/每周订阅限额，不切换到 API 密钥计费。较高的本地累计预算只是防止旧工作量阈值提前停止，不代表真实订阅额度。此配置每角色累计上限沿用100万估算美元／10亿 token，campaign 沿用10亿估算美元／1万亿 token；API 等价实际用量以 CLI 返回的模型明细为准，含 fallback 用量。
+
+依据：[官方模型与 fallback 配置](https://code.claude.com/docs/en/model-config)。下面保留原来的完整流程配置说明。历史本地镜像 ID 不是下载地址；其他电脑按 [Docker 说明](../docker/README.md) 构建或加载。
+
+## 保留的完整流程入口配置
 
 | 配置 | 默认目标 |
 | --- | --- |

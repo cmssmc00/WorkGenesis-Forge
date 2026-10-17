@@ -14,6 +14,9 @@ fi
 task_project_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
 task_python="$task_project_root/.venv/bin/python"
 task_config="$task_project_root/configs/gpt6_astra_subscription_one.json"
+if [[ -n "${WGFORGE_PARALLEL_RESUME:-}" ]]; then
+  task_config="$WGFORGE_PARALLEL_RESUME/config.json"
+fi
 export PATH="$PATH:$HOME/.local/bin:/opt/homebrew/bin:/usr/local/bin"
 cd -- "$task_project_root"
 if [[ ! -x "$task_python" ]]; then
@@ -126,6 +129,17 @@ sys.exit(0 if report.get("ready_for_operator_live_check") is True else 2)
 fi
 
 mkdir -p "$task_project_root/runs"
+if [[ "${WGFORGE_PARALLEL_MODE:-}" == '1' ]]; then
+  if [[ -n "${WGFORGE_PARALLEL_RESUME:-}" ]]; then
+    exec "$task_python" -m wgforge.parallel resume --out "$WGFORGE_PARALLEL_RESUME" --author-only --approve-live
+  fi
+  task_run_dir="$(mktemp -d "$task_project_root/runs/gpt6-astra-author-only-parallel-${task_count}-XXXXXXXX")"
+  echo 'Three independent workers; GPT-6 Astra / xhigh; discovery, attachments, task and rubric authoring only.'
+  echo 'No solver, judge, attribution, repair or teacher. Saved tasks are unevaluated.'
+  printf 'Total target across workers: %s task(s). Each worker retains the configured campaign budget.\n' "$task_count"
+  printf 'Resume this batch: bash scripts/run_codex_parallel.sh --resume "%s"\n' "$task_run_dir"
+  exec "$task_python" -m wgforge.parallel new --config "$task_config" --count "$task_count" --out "$task_run_dir" --approve-live
+fi
 task_run_dir="$(mktemp -d "$task_project_root/runs/gpt6-astra-${task_count}-XXXXXXXX")"
 printf 'Model: gpt-6-astra | reasoning: xhigh (extra high) | target: %s accepted task(s)\n' "$task_count"
 printf 'New output directory: %s\n' "$task_run_dir"

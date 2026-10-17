@@ -1,7 +1,8 @@
 """Small fail-closed Excel formula evaluator; never executes Python or external links.
 
 Supported: finite arithmetic, comparison, A1/range and sheet references,
-SUM, AVERAGE, MIN, MAX, COUNT, ABS, ROUND, IF. Not an Excel replacement.
+SUM, SUMIF (aligned ranges), AVERAGE, MIN, MAX, COUNT, COUNTA, ABS, ROUND, IF.
+Not an Excel replacement.
 """
 from __future__ import annotations
 import ast
@@ -22,16 +23,24 @@ def evaluate_formula(formula: str, workbook=None, sheet: str | None = None, seen
     if len(formula) > 8192 or any(token in formula for token in ["[", "]", "{", "}", "__", "http", "\\", ";"]):
         raise FormulaError("Unsupported or external formula")
     seen = set() if seen is None else seen
-    expr = formula[1:].replace("^", "**").replace("<>", "!=")
-    expr = re.sub(r"(?<![<>=!])=(?!=)", "==", expr)
-    expr = re.sub(r"(\d+(?:\.\d+)?)%", r"(\1/100)", expr)
     refs = []
     def replace(match):
         sh = match.group(1)
         sh = sh[:-1].strip("'") if sh else sheet
         refs.append((sh, match.group(2).replace("$", ""), (match.group(3) or "").replace("$", "")))
         return f"REF({len(refs)-1})"
-    expr = _REF.sub(replace, expr)
+    # Excel strings (including criteria like ">=5" and labels like "A1")
+    # must not be rewritten as operators or cell references.
+    parts = re.split(r'("(?:[^"]|"")*")', formula[1:])
+    for i, part in enumerate(parts):
+        if i % 2:
+            parts[i] = repr(part[1:-1].replace('""', '"'))
+        else:
+            part = part.replace("^", "**").replace("<>", "!=")
+            part = re.sub(r"(?<![<>=!])=(?!=)", "==", part)
+            part = re.sub(r"(\d+(?:\.\d+)?)%", r"(\1/100)", part)
+            parts[i] = _REF.sub(replace, part)
+    expr = "".join(parts)
     try:
         tree = ast.parse(expr, mode="eval")
     except (SyntaxError, RecursionError) as exc:
@@ -49,7 +58,7 @@ def evaluate_formula(formula: str, workbook=None, sheet: str | None = None, seen
         return result
     def numeric(args):
         return [x for x in flatten(args) if isinstance(x, (int, float)) and not isinstance(x, bool)]
-    def ref(index):
+    def ref(index, preserve_blanks=False):
         if workbook is None:
             raise FormulaError("Cell reference requires workbook")
         sh, start, end = refs[index]
@@ -63,7 +72,7 @@ def evaluate_formula(formula: str, workbook=None, sheet: str | None = None, seen
             value = ws[address].value
             if isinstance(value, str) and value.startswith("="):
                 return evaluate_formula(value, workbook, sh, seen | {key})
-            return 0 if value is None else value
+            return 0 if value is None and not preserve_blanks else value
         if end:
             from openpyxl.utils.cell import range_boundaries
             bounds = range_boundaries(f"{start}:{end}")
@@ -71,6 +80,49 @@ def evaluate_formula(formula: str, workbook=None, sheet: str | None = None, seen
                 raise FormulaError("Range too large")
             return [cell_value(c.coordinate) for row in ws[f"{start}:{end}"] for c in row]
         return cell_value(start)
+    def raw_argument(node):
+        if (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+                and node.func.id == "REF" and len(node.args) == 1
+                and isinstance(node.args[0], ast.Constant)):
+            return ref(node.args[0].value, preserve_blanks=True)
+        return walk(node)
+    def matches(value, criterion):
+        if criterion is None:
+            criterion = 0
+        op, target = "=", criterion
+        if isinstance(criterion, str):
+            match = re.match(r"^(<=|>=|<>|=|<|>)(.*)$", criterion, re.S)
+            if match:
+                op, target = match.groups()
+            try:
+                target = float(target)
+            except ValueError:
+                pass
+        if isinstance(target, (int, float)) and not isinstance(target, bool):
+            if value is None:
+                value = 0
+            if isinstance(value, bool) or not isinstance(value, (int, float)):
+                return op == "<>"
+        elif isinstance(target, str):
+            if value is None:
+                value = ""
+            if not isinstance(value, str):
+                return op == "<>"
+            value, target = value.casefold(), target.casefold()
+            if op in {"=", "<>"}:
+                pattern, i = [], 0
+                while i < len(target):
+                    char = target[i]
+                    if char == "~" and i + 1 < len(target):
+                        i += 1
+                        pattern.append(re.escape(target[i]))
+                    else:
+                        pattern.append(".*" if char == "*" else "." if char == "?" else re.escape(char))
+                    i += 1
+                equal = re.fullmatch("".join(pattern), value, re.S) is not None
+                return equal if op == "=" else not equal
+        return {"=": operator.eq, "<>": operator.ne, "<": operator.lt,
+                "<=": operator.le, ">": operator.gt, ">=": operator.ge}[op](value, target)
     def walk(node):
         if isinstance(node, ast.Expression): return walk(node.body)
         if isinstance(node, ast.Constant) and isinstance(node.value, (int, float, bool, str)):
@@ -94,6 +146,20 @@ def evaluate_formula(formula: str, workbook=None, sheet: str | None = None, seen
         if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and not node.keywords:
             name = node.func.id.upper()
             if name == "IF" and len(node.args) == 3: return walk(node.args[1] if walk(node.args[0]) else node.args[2])
+            if name in {"COUNT", "COUNTA"}:
+                values = flatten([raw_argument(x) for x in node.args])
+                return len(numeric(values)) if name == "COUNT" else sum(x is not None for x in values)
+            if name == "SUMIF":
+                if len(node.args) not in {2, 3}:
+                    raise FormulaError("SUMIF requires two or three arguments")
+                selected = flatten([raw_argument(node.args[0])])
+                criterion = walk(node.args[1])
+                amounts = flatten([raw_argument(node.args[2])]) if len(node.args) == 3 else selected
+                if len(selected) != len(amounts):
+                    raise FormulaError("SUMIF requires aligned ranges")
+                return finite(sum(amount for value, amount in zip(selected, amounts)
+                                  if isinstance(amount, (int, float)) and not isinstance(amount, bool)
+                                  and matches(value, criterion)))
             args = [walk(x) for x in node.args]
             if name == "REF" and len(args) == 1 and isinstance(args[0], int): return ref(args[0])
             values = numeric(args)

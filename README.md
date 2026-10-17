@@ -4,7 +4,16 @@ A research pipeline for generating source-grounded workplace tasks, testing them
 
 It implements the disclosed stages of [WorkGenesis](https://arxiv.org/abs/2609.39325), with documented substitutions for the model, model transport, occupation playbooks, and execution environment. It is an independent implementation, not the authors' official code or an exact reproduction of their training and benchmark results.
 
-**Current entry point: GPT-6 Astra with extra-high reasoning, through your own ChatGPT login in the official Codex CLI.** Start with one accepted task and one teacher trajectory. Task count is adjustable.
+**Current author-only entry point: Claude Opus 5.5 with `max` effort and official CLI fallback, through your own Claude subscription.** One serial worker generates 200 new tasks by default. Existing GPT-6 Astra/Codex and full-pipeline entry points remain available below.
+
+```bash
+claude auth login
+bash scripts/run_claude_subscription.sh
+```
+
+The launcher checks Docker and SerpAPI (prompts for the search key only if it is missing), then runs only `researcher → companion_author → task_author`. It does not solve, evaluate, revise tasks, or collect teacher trajectories. Saved tasks are `authored_unverified`. Set a different new-task target with `bash scripts/run_claude_subscription.sh 10`. Each new launch uses a fresh output directory and preserves existing runs. Resume a serial Claude campaign with `bash scripts/run_claude_subscription.sh --resume RUN_DIRECTORY`; this does not import or resume an old Codex parallel batch.
+
+Configuration: [`configs/claude_opus55_subscription_serial.json`](configs/claude_opus55_subscription_serial.json). The primary model is `claude-opus-5-5`, effort is `max`, and allowed fallback models are Opus 5 and Opus 4.8. Both official availability fallback and automatic flagged-request fallback are enabled; actual observed models and per-model usage are saved. Subscription quota, authentication, and network failures are not bypassed by fallback. See [Claude subscription setup](docs/CLAUDE_SUBSCRIPTION.md).
 
 ## Pipeline
 
@@ -27,7 +36,7 @@ Acceptance means no Task/Rubric defects remain according to the audit. It does n
 
 ## Model, reasoning effort, and authentication
 
-| Setting | Current Codex subscription profile |
+| Setting | Retained Codex subscription profile |
 | --- | --- |
 | Provider | `codex_subscription` |
 | Model identifier | `gpt-6-astra` |
@@ -165,6 +174,47 @@ For a configuration/readiness check without generation:
 
 If your network requires a proxy, export your own `HTTP_PROXY` / `HTTPS_PROXY` first. For compatibility with the original local setup, the launcher also detects an HTTP proxy listening at `127.0.0.1:7890` when no HTTPS proxy is set. Docker image pulls/builds may require separate Docker proxy settings.
 
+### Three workers: author 200 tasks without solving or evaluation
+
+To generate 200 **unevaluated task packets** across three parallel workers, using the same GPT-6 Astra / `xhigh` configuration:
+
+```bash
+bash scripts/run_codex_parallel.sh 200
+```
+
+The number is the **total authored-task target**, not a per-worker target. Omitting it also defaults to **200**, assigning **67, 67, and 66** plans to the three workers. For example, `30` assigns 10 plans to each worker, and `100` assigns 34, 33, and 33. Counts below three start only the needed workers. The planner builds one occupation-balanced schedule and assigns slots 1/4/7/... to worker 1, 2/5/8/... to worker 2, and 3/6/9/... to worker 3. Their first occupations differ; plan IDs never overlap within the batch.
+
+**This parallel launcher runs only source discovery, companion-file creation, and task/rubric authoring.** It skips solver, judge, attribution, repair and teacher calls. It retains file/schema/provenance checks needed to save usable packets, but performs no independent answer evaluation. Outputs are labeled `authored_unverified`, not accepted or evaluated. The original `run_codex_subscription.sh` command still runs the full pipeline.
+
+All workers use one saved configuration snapshot and separate processes, Docker sessions, campaign budgets, receipts, logs, and output directories. A locked shared source registry prevents two workers in this batch from reserving the same source URL/hash. This exact-source check does not guarantee semantic task uniqueness. Previously completed standalone runs remain separate and are not imported into the new batch's registry.
+
+The launcher prints the batch directory, for example `runs/gpt6-astra-author-only-parallel-200-XXXXXXXX`. Save that path. Progress is shown in the launching terminal; each worker's detailed output is written to `worker-1.log`, `worker-2.log`, or `worker-3.log` inside it. One failed worker does not stop the other workers. All three share the account's service limits, so speedup is not guaranteed to be threefold; their configured local budget caps apply separately.
+
+Check progress or follow one worker (replace the example directory):
+
+```bash
+.venv/bin/python -m wgforge.parallel status --out runs/YOUR_PARALLEL_BATCH
+tail -f runs/YOUR_PARALLEL_BATCH/worker-1.log
+```
+
+To continue the **same batch**, reuse its saved schedule and configuration:
+
+```bash
+bash scripts/run_codex_parallel.sh --resume runs/YOUR_PARALLEL_BATCH
+```
+
+Completed task packets remain on disk. Completed checkpoints are verified and reused rather than regenerated; logs are appended. The resume command rejects older full-pipeline batches, so it cannot silently start solving tasks. Preserve an old batch and start a new author-only batch instead of changing its saved configuration. An unfinished stage with an uncertain provider/search outcome can still stop for receipt inspection instead of automatic replay. A hard shutdown may leave a worker's `.campaign.lock`; only remove that stale lock after confirming no worker is running. Removing it does not erase or bypass an uncertain-stage checkpoint. Normal Ctrl+C asks all workers to stop and preserves their saved outputs.
+
+Each worker stores `campaign.json`, task bundles under `tasks/`, and an index at `dataset/tasks.json`. Bundles contain the public task and attachments plus the private rubric. `batch_plan.json` stores the immutable assignment; `batch_status.json` summarizes `authored_tasks`, finished plans and worker exit codes. This mode produces no answer trajectories; `accepted_tasks` and `completed_trajectories` stay zero. Run files are local and ignored by Git. No already completed standalone task is deleted or overwritten by the parallel launcher.
+
+For an offline preview of the schedule without model/search calls:
+
+```bash
+.venv/bin/python -m wgforge.parallel new \
+  --config configs/gpt6_astra_subscription_one.json --count 200 \
+  --out runs/parallel-preview --prepare-only
+```
+
 ### Limits and usage accounting
 
 The subscription presets intentionally retain very high local workload budgets: up to 1 billion cumulative tokens per role and 1 trillion per campaign. Review `roles.*.budget` and the campaign budget before increasing the task count. These settings do **not** increase subscription quotas or bypass service limits. Per-role step limits, timeouts, and source-search limits still apply.
@@ -173,7 +223,7 @@ The subscription presets intentionally retain very high local workload budgets: 
 
 ### Outputs and restarting
 
-Inspect `runs/<run-name>/campaign.json`. Completion requires `status: completed` and the requested `counts.accepted_tasks` and `counts.completed_trajectories`. Stage messages such as `task_author — Complete` are only one part of the pipeline. `6/256` counts that agent's steps, not completed tasks.
+For the full pipeline, inspect `runs/<run-name>/campaign.json`. Completion requires `status: completed` and the requested `counts.accepted_tasks` and `counts.completed_trajectories`. For an author-only parallel batch, use `batch_status.json`: completion requires `status: completed` and `authored_tasks` equal to the total target. Stage messages such as `task_author — Complete` are only one part of the pipeline. `6/256` counts that agent's steps, not completed tasks.
 
 Each campaign directory preserves task packets, private rubrics, solver deliverables, audit/attribution results, repair history, teacher trajectories, provenance, and usage receipts. Keep private rubrics and author metadata separate from solver-facing packets.
 

@@ -348,12 +348,13 @@ def _web_tools(env, root, run_dir, settings, state, save):
             return ToolResult(content=canonical(candidates), metadata=ToolUseCountMetadata())
         except SourceError as exc:
             entry["status"] = "uncertain"
-            from .sources import _search_failure
+            from .sources import _search_failure, SearchUnavailable
             entry["failure"] = _search_failure(exc).diagnostic
+            temporary = (entry["failure"]["http_status"] in {502, 503, 504}
+                         or entry["failure"]["code"] in {"network_connection_error", "network_timeout"})
             # Already downloaded evidence can still be inspected. Retain the
             # uncertain charge and disable ALL further searches in this stage.
-            if (entry["failure"]["code"] in {"network_connection_error", "network_timeout"}
-                    and state.get("web_downloads")):
+            if temporary and state.get("web_downloads"):
                 entry["continuation"] = "existing_sources_only"
                 save()
                 return ToolResult(content="Search failed: " + entry["failure"]["code"] +
@@ -367,6 +368,9 @@ def _web_tools(env, root, run_dir, settings, state, save):
             detail = entry["failure"]["code"]
             if entry["failure"]["http_status"] is not None:
                 detail += " HTTP " + str(entry["failure"]["http_status"])
+            if temporary:
+                raise SearchUnavailable("Search temporarily unavailable; " + detail +
+                                        "; uncertain billing receipt preserved") from None
             raise ForgeError("Search request failed with uncertain billing; " + detail + "; receipt preserved") from None
 
     async def fetch(params):

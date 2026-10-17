@@ -58,7 +58,11 @@ def validate_anchor_selection(response, out, lineage, required_formats=None):
         if not str(selection.get("content_summary", "")).strip() or not selection.get("key_fields"):
             raise ForgeError("Accepted anchors require a content summary and concrete fields/sections")
         original = safe_path(download_root, source["path"], True)
-        parsed = extract_artifact(original)
+        try:
+            parsed = extract_artifact(original)
+        except ValueError as exc:
+            from .workflow import UnsuitableSource
+            raise UnsuitableSource("Selected source cannot be parsed: " + str(exc)) from exc
         target = safe_path(out, source["path"])
         target.parent.mkdir(parents=True, exist_ok=True)
         if target.exists() and sha256(target) != source["sha256"]:
@@ -80,7 +84,7 @@ def validate_anchor_selection(response, out, lineage, required_formats=None):
             "receipt": response.get("receipt"), "lineage_memory_digest": digest(lineage)}}
 
 
-def collect_paper_anchors(plan, out, config, registry_path, lineage_id, scenario_id):
+def collect_paper_anchors(plan, out, config, registry_path, lineage_id, scenario_id, *, campaign_root=None):
     from .campaign import register_anchors
     from .workflow import json_role
     out = Path(out)
@@ -115,7 +119,8 @@ are typical, but never pad the set. URLs/hashes already in lineage are forbidden
                "occupation_playbook": plan.get("occupation_playbook", plan), "lineage_memory": memory,
                "required_file_formats": config.get("acquisition", {}).get("required_formats", []),
                "max_search_attempts": config.get("acquisition", {}).get("max_searches", 8)}
-    response = json_role(config, "researcher", payload, out / "researcher", Path(registry_path).parent, input_files={})
+    budget_root = Path(campaign_root) if campaign_root is not None else Path(registry_path).parent
+    response = json_role(config, "researcher", payload, out / "researcher", budget_root, input_files={})
     manifest = validate_anchor_selection(response, out, memory, payload["required_file_formats"])
     register_anchors(registry_path, lineage_id, scenario_id, manifest["sources"])
     write_json(out / "metadata.json", manifest["discovery"] | {"anchors": manifest["sources"]})

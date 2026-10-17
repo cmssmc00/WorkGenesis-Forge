@@ -104,8 +104,11 @@ def _source_evidence(source_manifest, manifest_base, intake, config):
         evidence.append({"record": source, "path": name, "extracted_text": parsed["text"],
                          "tables": parsed["tables"], "parser_notes": parsed.get("parser_notes", []),
                          "unverified_visual_content": parsed.get("unverified_visual_content", False)})
-    if len(canonical(evidence)) > config.get("evidence_char_limit", 300_000):
-        raise ForgeError("Source evidence exceeds configured synthesis limit; no silent truncation")
+    # Only the explicit preview is sent to the model. Keep the full extraction
+    # for evidence validation, and the original files for bounded tool reads.
+    projected = _prompt_reference_previews({item["path"]: item for item in evidence})
+    if len(canonical(projected)) > config.get("evidence_char_limit", 300_000):
+        raise UnsuitableSource("Source evidence preview exceeds configured synthesis limit")
     return sources, evidence, input_files
 
 
@@ -122,6 +125,37 @@ def _prompt_anchor_manifest(source_manifest):
     if isinstance(discovery, dict):
         discovery.pop("receipt", None)
     return projected
+
+
+def _prompt_reference_previews(references):
+    """Bound the permanent prompt, while keeping full files and validation evidence.
+
+    Stirrup retains the initial user message after every compaction. Embedding a
+    whole long report there can immediately trigger another compaction forever.
+    Only the prompt projection is shortened; original inputs remain byte-exact.
+    """
+    if len(canonical(references)) <= 48_000:
+        return deepcopy(references)
+    text_limit = min(12_000, 32_000 // max(1, len(references)))
+    previews = {}
+    for path, item in references.items():
+        preview = {key: deepcopy(item[key]) for key in (
+            "record", "path", "sha256", "parser_notes", "unverified_visual_content", "pages", "slides"
+        ) if key in item}
+        text_key = "extracted_text" if "extracted_text" in item else "text"
+        text = item.get(text_key, "")
+        preview[text_key] = text[:text_limit]
+        preview["tables"] = []
+        preview["preview"] = {
+            "partial": True, "full_text_characters": len(text),
+            "full_table_count": len(item.get("tables", [])), "source_path": path,
+            "instruction": "This is only a preview. The complete original file is available under input_paths. "
+                           "Read the relevant pages or rows with code_exec/view_image in bounded chunks. "
+                           "Do not print the whole document or repeat already completed inspection. "
+                           "Use actual source content for facts and exact evidence excerpts."
+        }
+        previews[path] = preview
+    return previews
 
 
 def _recorded_visual_inspections(stage, receipt):
@@ -196,7 +230,8 @@ def author_paper_scenario(plan, source_manifest, manifest_base, out, config,
     made = json_role(config, "companion_author", {
         "instructions": prompts.paper_stage("stage_2a_companions", prompts.PAPER_COMPANIONS),
         "synthesis_request": synthesis_request, "anchor_manifest": _prompt_anchor_manifest(source_manifest),
-        "sources": evidence, "supported_native_formats": sorted(FORMATS)},
+        "sources": list(_prompt_reference_previews({item["path"]: item for item in evidence}).values()),
+        "supported_native_formats": sorted(FORMATS)},
         out / "companions", campaign_root or out, input_files=input_files)
     assessment = _validate_material_manifest(made["result"], sources, evidence,
                                              _recorded_visual_inspections(out / "companions", made["receipt"]))
@@ -221,8 +256,8 @@ def author_paper_scenario(plan, source_manifest, manifest_base, out, config,
     authored = json_role(config, "task_author", {
         "instructions": prompts.paper_stage("stage_2b_task_rubric", prompts.PAPER_TASK_AUTHOR),
         "synthesis_request": synthesis_request, "reference_file_manifest": material_manifest,
-        "reference_files_parsed": {**{item["path"]: item for item in evidence},
-                                   **{"companions/" + key: value for key, value in rendered_companions.items()}},
+        "reference_files_parsed": _prompt_reference_previews({**{item["path"]: item for item in evidence},
+                                   **{"companions/" + key: value for key, value in rendered_companions.items()}}),
         "rubric_size_target": target, "request_schema": request_schema,
         "supported_native_formats": sorted(FORMATS),
         "solver_capabilities": config.get("solver_capabilities", {"harness": "Stirrup", "tools": ["code_exec", "view_image"], "public_research": False})},

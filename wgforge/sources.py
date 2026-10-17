@@ -46,6 +46,10 @@ class SearchError(SourceError):
         super().__init__("SerpAPI request failed: " + code + suffix + "; credentials omitted")
 
 
+class SearchUnavailable(SourceError):
+    """A temporary search service failure; retain this attempt before retrying."""
+
+
 def _search_failure(exc):
     current = exc
     for _ in range(5):

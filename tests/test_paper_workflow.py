@@ -11,7 +11,7 @@ from unittest.mock import patch
 from wgforge.common import ForgeError, digest, read_json, sha256, tree_hashes, write_json
 from wgforge.materialize import render_scenario, verify_bundle
 from wgforge.schema import VERSION
-from wgforge.synthesis import author_paper_scenario, stage_native_companions, _recorded_visual_inspections
+from wgforge.synthesis import author_paper_scenario, stage_native_companions, _recorded_visual_inspections, _prompt_reference_previews
 from wgforge.workflow import evolve_scenario, author_scenario, audit_run, json_role, validate_run_binding, validate_source_assessment, UnsuitableSource
 from wgforge import prompts
 
@@ -20,6 +20,50 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class PaperWorkflowTests(unittest.TestCase):
+    def test_small_reference_prompts_remain_unchanged(self):
+        refs = {"anchors/source.csv": {"extracted_text": "small source", "tables": [{"rows": [[1, 2]]}]}}
+        projected = _prompt_reference_previews(refs)
+        self.assertEqual(projected, refs)
+        projected["anchors/source.csv"]["tables"].clear()
+        self.assertEqual(len(refs["anchors/source.csv"]["tables"]), 1)
+
+    def test_long_source_is_previewed_in_both_stages_but_full_bytes_and_excerpt_validation_remain(self):
+        from wgforge.common import canonical
+        source = self.manifest["sources"][0]
+        path = self.base / source["path"]
+        tail = "Final audited observation outside the prompt preview"
+        path.write_text("observation,value\n" + ("Long occupational source observation,12345\n" * 12000) + tail + ",67890\n")
+        original_bytes = path.read_bytes()
+        source.update(sha256=sha256(path), bytes=path.stat().st_size)
+        updated_path = path.with_name(source["sha256"] + path.suffix)
+        path.rename(updated_path)
+        path = updated_path
+        source["path"] = str(path.relative_to(self.base))
+        # The complete extraction exceeds this limit; the explicit preview does
+        # not. Long original files must remain available and fully validated.
+        self.config["evidence_char_limit"] = 80_000
+        stages = []
+        def role(config, name, payload, stage_dir, campaign_root, input_files=None):
+            stages.append(name)
+            self.assertEqual(next(iter(input_files.values())).read_bytes(), original_bytes)
+            self.assertLess(len(canonical(payload)), 80_000)
+            refs = payload["sources"] if name == "companion_author" else list(payload["reference_files_parsed"].values())
+            self.assertTrue(refs[0]["preview"]["partial"])
+            self.assertNotIn(tail, refs[0]["extracted_text"])
+            if name == "companion_author":
+                result = self.material_result(payload)
+                # The coordinator must validate against the complete extraction,
+                # not reject a real quote merely because it lies past the preview.
+                result["source_assessment"][0]["evidence_excerpt"] = tail
+                return {"result": result, "receipt": {}, "artifact_root": self.native}
+            return {"result": self.task_result(), "receipt": {}, "artifact_root": self.native}
+        with patch("wgforge.workflow.json_role", side_effect=role):
+            output = author_scenario(self.plan, self.manifest, self.base, self.root / "generation", self.config)
+        self.assertEqual(stages, ["companion_author", "task_author"])
+        doc = verify_bundle(output)
+        self.assertEqual(doc["anchor_sources"][0]["sha256"], source["sha256"])
+        self.assertEqual(path.read_bytes(), original_bytes)
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name)
