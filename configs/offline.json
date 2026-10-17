@@ -1,0 +1,16 @@
+{
+  "profile": "offline_control",
+  "planning": {
+    "count": 6,
+    "seed": 42
+  },
+  "sources": {
+    "adapter": "direct",
+    "direct_urls": [],
+    "allowed_hosts": [
+      "earthquake.usgs.gov"
+    ],
+    "max_bytes": 1000000,
+    "timeout_seconds": 30
+  }
+}

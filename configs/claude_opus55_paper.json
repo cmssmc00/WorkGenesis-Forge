@@ -1,0 +1,545 @@
+{
+  "profile": "paper_v1_claude_opus55",
+  "profile_status": "Implementation of disclosed WorkGenesis stages with user-selected Claude and configurable scale; not a numerical reproduction claim",
+  "paper_experiment": {
+    "teacher": "GLM-5.2",
+    "student": "Qwen3.6-35B-A3B",
+    "target_tasks": 20000,
+    "occupations": 65,
+    "context_tokens": 256000,
+    "compaction_trigger": 0.7
+  },
+  "user_requested_differences": [
+    "Use Claude Opus 5.5 for all synthesis, verification, repair and trajectory collection roles",
+    "Default target 100 accepted tasks; adjustable with planning.count or --count"
+  ],
+  "planning": {
+    "adapter": "paper_occupations",
+    "count": 100,
+    "seed": 42,
+    "sampling": "occupation_balanced"
+  },
+  "synthesis": {
+    "protocol": "paper_v1",
+    "rubric_size_target": 40
+  },
+  "roles": {
+    "researcher": {
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "allowed_hosts": [
+        "api.anthropic.com"
+      ],
+      "api_key_env": "ANTHROPIC_API_KEY",
+      "anthropic_version": "2023-06-01",
+      "effort": "high",
+      "stream": true,
+      "use_json_response_format": false,
+      "harness": "stirrup",
+      "privacy": {
+        "public_upload_approved": true,
+        "private_upload_approved": true
+      },
+      "budget": {
+        "max_cost_usd": 50.0,
+        "input_usd_per_million": 4.0,
+        "output_usd_per_million": 20.0,
+        "cache_read_usd_per_million": 0.2,
+        "cache_write_5m_usd_per_million": 5.0,
+        "cache_write_1h_usd_per_million": 8.0,
+        "max_requests": 256,
+        "max_steps": 256,
+        "max_input_tokens": 1200000,
+        "max_output_tokens": 32768,
+        "max_total_tokens": 12000000
+      },
+      "timeout_seconds": 900,
+      "max_run_seconds": 14400,
+      "max_retries": 0,
+      "max_response_bytes": 16000000,
+      "max_payload_bytes": 32000000,
+      "stirrup": {
+        "revision": "247f24d56b2108235880ed2a2baea5d35b5a67ee",
+        "context_tokens": 256000,
+        "compaction_trigger": 0.7,
+        "command_timeout_seconds": 600,
+        "sandbox": {
+          "backend": "docker",
+          "image_env": "WGFORGE_PAPER_IMAGE"
+        },
+        "web_enabled": true,
+        "max_searches": 8,
+        "sources": {
+          "adapter": "serpapi",
+          "enable_paid_search": true,
+          "serpapi_key_env": "SERPAPI_API_KEY",
+          "allow_public_web": true,
+          "allowed_hosts": [],
+          "max_bytes": 32000000,
+          "timeout_seconds": 60,
+          "max_redirects": 4,
+          "max_results": 10
+        }
+      }
+    },
+    "companion_author": {
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "allowed_hosts": [
+        "api.anthropic.com"
+      ],
+      "api_key_env": "ANTHROPIC_API_KEY",
+      "anthropic_version": "2023-06-01",
+      "effort": "high",
+      "stream": true,
+      "use_json_response_format": false,
+      "harness": "stirrup",
+      "privacy": {
+        "public_upload_approved": true,
+        "private_upload_approved": true
+      },
+      "budget": {
+        "max_cost_usd": 50.0,
+        "input_usd_per_million": 4.0,
+        "output_usd_per_million": 20.0,
+        "cache_read_usd_per_million": 0.2,
+        "cache_write_5m_usd_per_million": 5.0,
+        "cache_write_1h_usd_per_million": 8.0,
+        "max_requests": 256,
+        "max_steps": 256,
+        "max_input_tokens": 1200000,
+        "max_output_tokens": 32768,
+        "max_total_tokens": 12000000
+      },
+      "timeout_seconds": 900,
+      "max_run_seconds": 14400,
+      "max_retries": 0,
+      "max_response_bytes": 16000000,
+      "max_payload_bytes": 32000000,
+      "stirrup": {
+        "revision": "247f24d56b2108235880ed2a2baea5d35b5a67ee",
+        "context_tokens": 256000,
+        "compaction_trigger": 0.7,
+        "command_timeout_seconds": 600,
+        "sandbox": {
+          "backend": "docker",
+          "image_env": "WGFORGE_PAPER_IMAGE"
+        },
+        "web_enabled": true,
+        "max_searches": 8,
+        "sources": {
+          "adapter": "serpapi",
+          "enable_paid_search": true,
+          "serpapi_key_env": "SERPAPI_API_KEY",
+          "allow_public_web": true,
+          "allowed_hosts": [],
+          "max_bytes": 32000000,
+          "timeout_seconds": 60,
+          "max_redirects": 4,
+          "max_results": 10
+        }
+      }
+    },
+    "task_author": {
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "allowed_hosts": [
+        "api.anthropic.com"
+      ],
+      "api_key_env": "ANTHROPIC_API_KEY",
+      "anthropic_version": "2023-06-01",
+      "effort": "high",
+      "stream": true,
+      "use_json_response_format": false,
+      "harness": "stirrup",
+      "privacy": {
+        "public_upload_approved": true,
+        "private_upload_approved": true
+      },
+      "budget": {
+        "max_cost_usd": 50.0,
+        "input_usd_per_million": 4.0,
+        "output_usd_per_million": 20.0,
+        "cache_read_usd_per_million": 0.2,
+        "cache_write_5m_usd_per_million": 5.0,
+        "cache_write_1h_usd_per_million": 8.0,
+        "max_requests": 256,
+        "max_steps": 256,
+        "max_input_tokens": 1200000,
+        "max_output_tokens": 32768,
+        "max_total_tokens": 12000000
+      },
+      "timeout_seconds": 900,
+      "max_run_seconds": 14400,
+      "max_retries": 0,
+      "max_response_bytes": 16000000,
+      "max_payload_bytes": 32000000,
+      "stirrup": {
+        "revision": "247f24d56b2108235880ed2a2baea5d35b5a67ee",
+        "context_tokens": 256000,
+        "compaction_trigger": 0.7,
+        "command_timeout_seconds": 600,
+        "sandbox": {
+          "backend": "docker",
+          "image_env": "WGFORGE_PAPER_IMAGE"
+        },
+        "web_enabled": false,
+        "max_searches": 8,
+        "sources": {
+          "adapter": "serpapi",
+          "enable_paid_search": true,
+          "serpapi_key_env": "SERPAPI_API_KEY",
+          "allow_public_web": true,
+          "allowed_hosts": [],
+          "max_bytes": 32000000,
+          "timeout_seconds": 60,
+          "max_redirects": 4,
+          "max_results": 10
+        }
+      }
+    },
+    "solver": {
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "allowed_hosts": [
+        "api.anthropic.com"
+      ],
+      "api_key_env": "ANTHROPIC_API_KEY",
+      "anthropic_version": "2023-06-01",
+      "effort": "high",
+      "stream": true,
+      "use_json_response_format": false,
+      "harness": "stirrup",
+      "privacy": {
+        "public_upload_approved": true,
+        "private_upload_approved": true
+      },
+      "budget": {
+        "max_cost_usd": 50.0,
+        "input_usd_per_million": 4.0,
+        "output_usd_per_million": 20.0,
+        "cache_read_usd_per_million": 0.2,
+        "cache_write_5m_usd_per_million": 5.0,
+        "cache_write_1h_usd_per_million": 8.0,
+        "max_requests": 256,
+        "max_steps": 256,
+        "max_input_tokens": 1200000,
+        "max_output_tokens": 32768,
+        "max_total_tokens": 12000000
+      },
+      "timeout_seconds": 900,
+      "max_run_seconds": 14400,
+      "max_retries": 0,
+      "max_response_bytes": 16000000,
+      "max_payload_bytes": 32000000,
+      "stirrup": {
+        "revision": "247f24d56b2108235880ed2a2baea5d35b5a67ee",
+        "context_tokens": 256000,
+        "compaction_trigger": 0.7,
+        "command_timeout_seconds": 600,
+        "sandbox": {
+          "backend": "docker",
+          "image_env": "WGFORGE_PAPER_IMAGE"
+        },
+        "web_enabled": false,
+        "max_searches": 8,
+        "sources": {
+          "adapter": "serpapi",
+          "enable_paid_search": true,
+          "serpapi_key_env": "SERPAPI_API_KEY",
+          "allow_public_web": true,
+          "allowed_hosts": [],
+          "max_bytes": 32000000,
+          "timeout_seconds": 60,
+          "max_redirects": 4,
+          "max_results": 10
+        }
+      }
+    },
+    "judge": {
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "allowed_hosts": [
+        "api.anthropic.com"
+      ],
+      "api_key_env": "ANTHROPIC_API_KEY",
+      "anthropic_version": "2023-06-01",
+      "effort": "high",
+      "stream": true,
+      "use_json_response_format": false,
+      "harness": "stirrup",
+      "privacy": {
+        "public_upload_approved": true,
+        "private_upload_approved": true
+      },
+      "budget": {
+        "max_cost_usd": 50.0,
+        "input_usd_per_million": 4.0,
+        "output_usd_per_million": 20.0,
+        "cache_read_usd_per_million": 0.2,
+        "cache_write_5m_usd_per_million": 5.0,
+        "cache_write_1h_usd_per_million": 8.0,
+        "max_requests": 256,
+        "max_steps": 256,
+        "max_input_tokens": 1200000,
+        "max_output_tokens": 32768,
+        "max_total_tokens": 12000000
+      },
+      "timeout_seconds": 900,
+      "max_run_seconds": 14400,
+      "max_retries": 0,
+      "max_response_bytes": 16000000,
+      "max_payload_bytes": 32000000,
+      "stirrup": {
+        "revision": "247f24d56b2108235880ed2a2baea5d35b5a67ee",
+        "context_tokens": 256000,
+        "compaction_trigger": 0.7,
+        "command_timeout_seconds": 600,
+        "sandbox": {
+          "backend": "docker",
+          "image_env": "WGFORGE_PAPER_IMAGE"
+        },
+        "web_enabled": false,
+        "max_searches": 8,
+        "sources": {
+          "adapter": "serpapi",
+          "enable_paid_search": true,
+          "serpapi_key_env": "SERPAPI_API_KEY",
+          "allow_public_web": true,
+          "allowed_hosts": [],
+          "max_bytes": 32000000,
+          "timeout_seconds": 60,
+          "max_redirects": 4,
+          "max_results": 10
+        }
+      }
+    },
+    "attributor": {
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "allowed_hosts": [
+        "api.anthropic.com"
+      ],
+      "api_key_env": "ANTHROPIC_API_KEY",
+      "anthropic_version": "2023-06-01",
+      "effort": "high",
+      "stream": true,
+      "use_json_response_format": false,
+      "harness": "stirrup",
+      "privacy": {
+        "public_upload_approved": true,
+        "private_upload_approved": true
+      },
+      "budget": {
+        "max_cost_usd": 50.0,
+        "input_usd_per_million": 4.0,
+        "output_usd_per_million": 20.0,
+        "cache_read_usd_per_million": 0.2,
+        "cache_write_5m_usd_per_million": 5.0,
+        "cache_write_1h_usd_per_million": 8.0,
+        "max_requests": 256,
+        "max_steps": 256,
+        "max_input_tokens": 1200000,
+        "max_output_tokens": 32768,
+        "max_total_tokens": 12000000
+      },
+      "timeout_seconds": 900,
+      "max_run_seconds": 14400,
+      "max_retries": 0,
+      "max_response_bytes": 16000000,
+      "max_payload_bytes": 32000000,
+      "stirrup": {
+        "revision": "247f24d56b2108235880ed2a2baea5d35b5a67ee",
+        "context_tokens": 256000,
+        "compaction_trigger": 0.7,
+        "command_timeout_seconds": 600,
+        "sandbox": {
+          "backend": "docker",
+          "image_env": "WGFORGE_PAPER_IMAGE"
+        },
+        "web_enabled": false,
+        "max_searches": 8,
+        "sources": {
+          "adapter": "serpapi",
+          "enable_paid_search": true,
+          "serpapi_key_env": "SERPAPI_API_KEY",
+          "allow_public_web": true,
+          "allowed_hosts": [],
+          "max_bytes": 32000000,
+          "timeout_seconds": 60,
+          "max_redirects": 4,
+          "max_results": 10
+        }
+      }
+    },
+    "repairer": {
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "allowed_hosts": [
+        "api.anthropic.com"
+      ],
+      "api_key_env": "ANTHROPIC_API_KEY",
+      "anthropic_version": "2023-06-01",
+      "effort": "high",
+      "stream": true,
+      "use_json_response_format": false,
+      "harness": "stirrup",
+      "privacy": {
+        "public_upload_approved": true,
+        "private_upload_approved": true
+      },
+      "budget": {
+        "max_cost_usd": 50.0,
+        "input_usd_per_million": 4.0,
+        "output_usd_per_million": 20.0,
+        "cache_read_usd_per_million": 0.2,
+        "cache_write_5m_usd_per_million": 5.0,
+        "cache_write_1h_usd_per_million": 8.0,
+        "max_requests": 256,
+        "max_steps": 256,
+        "max_input_tokens": 1200000,
+        "max_output_tokens": 32768,
+        "max_total_tokens": 12000000
+      },
+      "timeout_seconds": 900,
+      "max_run_seconds": 14400,
+      "max_retries": 0,
+      "max_response_bytes": 16000000,
+      "max_payload_bytes": 32000000,
+      "stirrup": {
+        "revision": "247f24d56b2108235880ed2a2baea5d35b5a67ee",
+        "context_tokens": 256000,
+        "compaction_trigger": 0.7,
+        "command_timeout_seconds": 600,
+        "sandbox": {
+          "backend": "docker",
+          "image_env": "WGFORGE_PAPER_IMAGE"
+        },
+        "web_enabled": false,
+        "max_searches": 8,
+        "sources": {
+          "adapter": "serpapi",
+          "enable_paid_search": true,
+          "serpapi_key_env": "SERPAPI_API_KEY",
+          "allow_public_web": true,
+          "allowed_hosts": [],
+          "max_bytes": 32000000,
+          "timeout_seconds": 60,
+          "max_redirects": 4,
+          "max_results": 10
+        }
+      }
+    },
+    "teacher": {
+      "provider": "anthropic",
+      "model": "claude-opus-5-5",
+      "endpoint": "https://api.anthropic.com/v1/messages",
+      "allowed_hosts": [
+        "api.anthropic.com"
+      ],
+      "api_key_env": "ANTHROPIC_API_KEY",
+      "anthropic_version": "2023-06-01",
+      "effort": "high",
+      "stream": true,
+      "use_json_response_format": false,
+      "harness": "stirrup",
+      "privacy": {
+        "public_upload_approved": true,
+        "private_upload_approved": true
+      },
+      "budget": {
+        "max_cost_usd": 50.0,
+        "input_usd_per_million": 4.0,
+        "output_usd_per_million": 20.0,
+        "cache_read_usd_per_million": 0.2,
+        "cache_write_5m_usd_per_million": 5.0,
+        "cache_write_1h_usd_per_million": 8.0,
+        "max_requests": 256,
+        "max_steps": 256,
+        "max_input_tokens": 1200000,
+        "max_output_tokens": 32768,
+        "max_total_tokens": 12000000
+      },
+      "timeout_seconds": 900,
+      "max_run_seconds": 14400,
+      "max_retries": 0,
+      "max_response_bytes": 16000000,
+      "max_payload_bytes": 32000000,
+      "stirrup": {
+        "revision": "247f24d56b2108235880ed2a2baea5d35b5a67ee",
+        "context_tokens": 256000,
+        "compaction_trigger": 0.7,
+        "command_timeout_seconds": 600,
+        "sandbox": {
+          "backend": "docker",
+          "image_env": "WGFORGE_PAPER_IMAGE"
+        },
+        "web_enabled": false,
+        "max_searches": 8,
+        "sources": {
+          "adapter": "serpapi",
+          "enable_paid_search": true,
+          "serpapi_key_env": "SERPAPI_API_KEY",
+          "allow_public_web": true,
+          "allowed_hosts": [],
+          "max_bytes": 32000000,
+          "timeout_seconds": 60,
+          "max_redirects": 4,
+          "max_results": 10
+        }
+      }
+    }
+  },
+  "sources": {
+    "adapter": "serpapi",
+    "enable_paid_search": true,
+    "serpapi_key_env": "SERPAPI_API_KEY",
+    "allow_public_web": true,
+    "allowed_hosts": [],
+    "max_bytes": 32000000,
+    "timeout_seconds": 60,
+    "max_redirects": 4,
+    "max_results": 10
+  },
+  "acquisition": {
+    "max_searches": 8,
+    "required_formats": []
+  },
+  "construction": {
+    "max_attempts_per_plan": 10
+  },
+  "repair": {
+    "repeated_defect_limit": 3,
+    "max_rounds": null,
+    "independent_repair_review": false
+  },
+  "trajectory_collection": {
+    "enabled": true,
+    "per_accepted_task": 1,
+    "role": "teacher",
+    "quality_filter": "none_disclosed_in_paper"
+  },
+  "campaign_budget": {
+    "max_cost_usd": 500.0,
+    "max_requests": 25000,
+    "max_tokens": 75000000
+  },
+  "evidence_char_limit": 800000,
+  "audit_char_limit": 1600000,
+  "minimum_source_chars": 100,
+  "implementation_choices": {
+    "seed": 42,
+    "rubric_size_target": 40,
+    "max_search_attempts": 8,
+    "max_construction_attempts_per_plan": 10,
+    "note": "These operational bounds and prompt placeholders were not specified by the paper. Reaching a bound is an incomplete campaign, never success."
+  },
+  "configuration_note": "No calls occur without --approve-live. Credentials are environment-only. Rate reference: official Anthropic Opus 5.5 docs checked 2026-10-15. The global USD cap is an execution limit, not a cost estimate; unknown outcomes stay charged. Original image/playbooks/revision/SFT preprocessing were not published."
+}

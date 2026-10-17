@@ -1,0 +1,7 @@
+{
+  "purpose": "Training exclusion registry; replace with verified heldout lineage and source fingerprints before export",
+  "anchor_hashes": [],
+  "lineage_ids": [],
+  "ngram_texts": [],
+  "status": "EMPTY_TEMPLATE_NOT_A_CONTAMINATION_CHECK"
+}

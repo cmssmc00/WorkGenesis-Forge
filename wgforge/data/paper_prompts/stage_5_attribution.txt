@@ -1,0 +1,124 @@
+D.6 Stage 5: Attributing the Unsatisfied Items
+Stage 5 – Attribute unsatisfied rubric items
+You are a review specialist for professional work scenarios. A reference solution has been scored
+against a rubric item by item, and some items did not receive full credit. Each of those items
+needs a cause. Work through the items and decide, for each one, why it was not fully satisfied.
+Return the classifications in the JSON format below and nothing else.
+# Background
+A unit of work consists of a work request, a set of reference files, and a rubric. An execution agent
+attempted the request using the reference files and produced a deliverable. The deliverable was
+then scored against the rubric, and the items that did not receive full credit are collected for
+you. An unsatisfied item can have more than one cause, and you may assign several cause labels to
+the same item.
+The three causes are:
+- Agent: the criterion is a fair requirement grounded in the request or the files, and the deliverable
+missed it because the execution agent was not able to meet it.
+- Rubric: the criterion itself is defective, for example it conflicts with the reference files,
+misreads the request, is defined too strictly, is ambiguous, or admits several incompatible
+readings.
+- Task: the scenario contradicts itself, for example a request that refers to content the reference
+files do not contain, or reference files that contradict the request or the rubric.
+Only items labeled Rubric or Task are repaired later. Items labeled Agent are recorded and left alone,
+because a capability gap in the execution agent is not a defect of the scenario. Labeling an item
+Agent when the criterion or the scenario is at fault hides a real defect, and labeling an item
+Rubric or Task when the requirement was fair leads to a change in a scenario that was already
+working.
+
+# Work request
+{TASK_PROMPT}
+# Reference files
+{REFERENCE_FILES_PARSED}
+# Reference deliverable
+{REFERENCE_DELIVERABLE_PARSED}
+# Rubric
+{RUBRIC}
+# Unsatisfied items
+{UNSATISFIED_ITEMS}
+# Verification round
+{ROUND_INDEX}
+# Instructions
+You may receive the whole set of unsatisfied items or one item at a time. Return one judgment object per
+item, in the order you received them.
+For each item:
+1. Restate what the criterion demands, in terms of an observable property of the deliverable.
+2. Find the part of the request or the reference files that makes the requirement decidable. If no such
+part exists, treat that as evidence toward Rubric or Task.
+3. Confirm from the reference deliverable what it contains on this point, and verify the scorer
+rationale against the deliverable itself.
+4. Test each cause. Assign Agent when the requirement is reasonable, decidable, and grounded, and the
+deliverable missed it. Assign Rubric when the criterion conflicts with the files, misreads the
+request, demands more than the files support, or admits incompatible readings. Assign Task when the
+request and the files are inconsistent with each other in a way that makes the item unsatisfiable
+or unfair. For a penalty item, the delivery failed it because the prohibited condition is present,
+so test the same three causes against the condition the item forbids.
+5. Combine labels when the causes overlap, for example a criterion that is too strict and also
+unachievable from the supplied files. Do not pad the labels when one cause dominates.
+6. When it is unclear whether the deliverable fell short or the criterion is wrong, side with the
+criterion being wrong when the files cannot support the requirement, and with Agent when the
+requirement is fair and clearly supportable. Record the tie-break you used.
+Do not propose repairs, and do not rewrite the criterion, the request, or the files. This stage
+classifies and justifies; the next stage repairs.
+# Response format
+Return only a single JSON object, with no prose before or after it and no fenced code block. Use this
+shape.
+```json
+{
+"round_index": 0,
+"attributions": [
+{
+"rubric_item_index": 11,
+"criterion": "<the criterion text, verbatim>",
+"score": 3,
+"awarded_score": 1,
+"labels": ["Rubric"],
+"primary_cause": "Rubric",
+"evidence": [
+{
+"source": "reference_file",
+"reference": "<filename and location, for example supplier_catalog.xlsx sheet Prices column D
+>",
+"quote_or_value": "<the exact text or value you relied on>",
+"supports": "<which label this evidence supports>"
+}
+],
+"justification": "<2-4 sentences tying the evidence to the labels>",
+"tie_break_applied": "none",
+"corrective_action": "revise_rubric"
+
+}
+],
+"summary": {
+"items_attributed": 0,
+"label_counts": {"Agent": 0, "Rubric": 0, "Task": 0},
+"defect_item_indices": [11],
+"defect_count": 0,
+"notes": "<one or two sentences on any pattern across items>"
+}
+}
+```
+Field rules:
+- labels is non-empty and drawn only from "Agent", "Rubric", and "Task", sorted in that order.
+- primary_cause is the most important label and is a member of labels.
+- evidence has at least one entry. Each source is one of "task_prompt", "reference_file", "rubric", or
+"reference_deliverable".
+- corrective_action is "leave_as_is" when labels is exactly ["Agent"]. Otherwise it names what the next
+stage should change: "revise_rubric" when Rubric dominates, "revise_task_prompt" or "
+revise_synthetic_files" when Task dominates, and the multiple parts involved when the labels
+combine.
+- defect_item_indices is exactly the set of list indices whose labels include Rubric or Task, and
+matches corrective_action for those items.
+- score and awarded_score copy the input values without recomputing them, including the sign of a
+penalty item.
+- Emit one attributions entry per input item, in input order, echoing the input rubric_item_index
+unchanged.
+# Rules
+- Base every judgment on the provided materials. Do not use outside knowledge of how such work is
+usually done to invent facts the materials do not contain.
+- Where the request, the rubric, and the reference files disagree about a file content, the reference
+file is authoritative.
+- Do not label an item Agent only because the deliverable looks weak. Ask whether a competent worker
+with only these materials could have met a fair version of the criterion. If the requirement is
+unsupported, classify it as Rubric or Task.
+- Do not label an item Rubric or Task only because the deliverable missed it. Ask first whether the
+criterion is fair and grounded. If it is, the cause is Agent.
+- Return JSON only, with no commentary and no fenced block.

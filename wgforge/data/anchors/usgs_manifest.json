@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "sources": [
+    {
+      "id": "usgs_earthquakes_oct2026_200",
+      "path": "raw/4382a1162b5f63c3afcc6eb29b71d2198d6d4793fb07b0efbfde395ed31acd04.csv",
+      "url": "https://earthquake.usgs.gov/fdsnws/event/1/query?format=csv&starttime=2026-10-01&endtime=2026-10-11&catalog=us&orderby=time-asc&limit=200",
+      "final_url": "https://earthquake.usgs.gov/fdsnws/event/1/query?format=csv&starttime=2026-10-01&endtime=2026-10-11&catalog=us&orderby=time-asc&limit=200",
+      "sha256": "4382a1162b5f63c3afcc6eb29b71d2198d6d4793fb07b0efbfde395ed31acd04",
+      "bytes": 38105,
+      "title": "USGS earthquake catalog: bounded 200-event October 2026 snapshot",
+      "license": "US-Public-Domain",
+      "rights_status": "approved",
+      "rights_basis": "USGS-produced numerical catalog data; official policy places USGS-authored or produced data in the U.S. public domain. The query selects catalog=us and every returned net value was verified as us. No third-party media, trademark artwork, or personal records are included. Rights review is scoped to these saved data bytes, not everything on the domain.",
+      "rights_evidence": [
+        "https://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits",
+        "https://earthquake.usgs.gov/fdsnws/event/1/"
+      ],
+      "attribution": "U.S. Geological Survey, Earthquake Hazards Program. Snapshot retrieved 2026-10-13; query window 2026-10-01 through 2026-10-11, earliest 200 matching events. Numerical facts may be revised by USGS.",
+      "synthetic": false,
+      "provenance_kind": "exact-public",
+      "retrieved_at": "2026-10-13T11:10:23.351502+00:00",
+      "retrieval_method": "HTTPS curl through environment-provided egress proxy; TLS verification enabled; --fail, --proto =https, size/time bounded; exact response bytes retained",
+      "mime_type": "text/csv",
+      "row_count": 200,
+      "scope_note": "The endpoint limit is 200; this is a bounded pilot, not a complete ten-day earthquake census.",
+      "rights_permissions": {
+        "training": true,
+        "redistribution": true,
+        "public_access": true
+      }
+    }
+  ]
+}

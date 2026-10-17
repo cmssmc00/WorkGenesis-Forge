@@ -1,0 +1,468 @@
+{
+  "schema_version": 1,
+  "kind": "curated_onet_smoke_subset",
+  "source_manifest": "onet_manifest.json",
+  "selection_note": "Small smoke subset selected from exact official O*NET 30.0 occupation and activity rows. It is not a full workforce distribution. Families are authored mappings.",
+  "inventory": [
+    {
+      "profession": "General and Operations Managers",
+      "occupation_code": "11-1021.00",
+      "activity": "Getting Information",
+      "activity_id": "4.A.1.a.1",
+      "deliverable_families": [
+        "spreadsheet",
+        "document",
+        "presentation"
+      ],
+      "onet_importance": 4.42,
+      "inventory_origin": "curated_onet_smoke_subset",
+      "activity_provenance": {
+        "source_id": "onet30_work_activities",
+        "sha256": "c360f09974150f9e6553795c7f739178320967b56b6488a063f14068d4d8522e",
+        "line": 166,
+        "version": "30.0",
+        "scale_id": "IM",
+        "domain_source": "Incumbent",
+        "recommend_suppress": "N"
+      },
+      "mapping_note": "O*NET occupation/activity linkage is verbatim data. Deliverable-family mapping and selection are author-curated, not O*NET claims."
+    },
+    {
+      "profession": "General and Operations Managers",
+      "occupation_code": "11-1021.00",
+      "activity": "Analyzing Data or Information",
+      "activity_id": "4.A.2.a.4",
+      "deliverable_families": [
+        "spreadsheet",
+        "document",
+        "presentation"
+      ],
+      "onet_importance": 4.04,
+      "inventory_origin": "curated_onet_smoke_subset",
+      "activity_provenance": {
+        "source_id": "onet30_work_activities",
+        "sha256": "c360f09974150f9e6553795c7f739178320967b56b6488a063f14068d4d8522e",
+        "line": 182,
+        "version": "30.0",
+        "scale_id": "IM",
+        "domain_source": "Incumbent",
+        "recommend_suppress": "N"
+      },
+      "mapping_note": "O*NET occupation/activity linkage is verbatim data. Deliverable-family mapping and selection are author-curated, not O*NET claims."
+    },
+    {
+      "profession": "General and Operations Managers",
+      "occupation_code": "11-1021.00",
+      "activity": "Thinking Creatively",
+      "activity_id": "4.A.2.b.2",
+      "deliverable_families": [
+        "spreadsheet",
+        "document",
+        "presentation"
+      ],
+      "onet_importance": 3.7,
+      "inventory_origin": "curated_onet_smoke_subset",
+      "activity_provenance": {
+        "source_id": "onet30_work_activities",
+        "sha256": "c360f09974150f9e6553795c7f739178320967b56b6488a063f14068d4d8522e",
+        "line": 186,
+        "version": "30.0",
+        "scale_id": "IM",
+        "domain_source": "Incumbent",
+        "recommend_suppress": "N"
+      },
+      "mapping_note": "O*NET occupation/activity linkage is verbatim data. Deliverable-family mapping and selection are author-curated, not O*NET claims."
+    },
+    {
+      "profession": "General and Operations Managers",
+      "occupation_code": "11-1021.00",
+      "activity": "Documenting/Recording Information",
+      "activity_id": "4.A.3.b.6",
+      "deliverable_families": [
+        "spreadsheet",
+        "document",
+        "presentation"
+      ],
+      "onet_importance": 3.94,
+      "inventory_origin": "curated_onet_smoke_subset",
+      "activity_provenance": {
+        "source_id": "onet30_work_activities",
+        "sha256": "c360f09974150f9e6553795c7f739178320967b56b6488a063f14068d4d8522e",
+        "line": 212,
+        "version": "30.0",
+        "scale_id": "IM",
+        "domain_source": "Incumbent",
+        "recommend_suppress": "N"
+      },
+      "mapping_note": "O*NET occupation/activity linkage is verbatim data. Deliverable-family mapping and selection are author-curated, not O*NET claims."
+    },
+    {
+      "profession": "Emergency Management Directors",
+      "occupation_code": "11-9161.00",
+      "activity": "Getting Information",
+      "activity_id": "4.A.1.a.1",
+      "deliverable_families": [
+        "spreadsheet",
+        "document",
+        "presentation"
+      ],
+      "onet_importance": 4.45,
+      "inventory_origin": "curated_onet_smoke_subset",
+      "activity_provenance": {
+        "source_id": "onet30_work_activities",
+        "sha256": "c360f09974150f9e6553795c7f739178320967b56b6488a063f14068d4d8522e",
+        "line": 3610,
+        "version": "30.0",
+        "scale_id": "IM",
+        "domain_source": "Occupational Expert",
+        "recommend_suppress": "n/a"
+      },
+      "mapping_note": "O*NET occupation/activity linkage is verbatim data. Deliverable-family mapping and selection are author-curated, not O*NET claims."
+    },
+    {
+      "profession": "Emergency Management Directors",
+      "occupation_code": "11-9161.00",
+      "activity": "Analyzing Data or Information",
+      "activity_id": "4.A.2.a.4",
+      "deliverable_families": [
+        "spreadsheet",
+        "document",
+        "presentation"
+      ],
+      "onet_importance": 3.77,
+      "inventory_origin": "curated_onet_smoke_subset",
+      "activity_provenance": {
+        "source_id": "onet30_work_activities",
+        "sha256": "c360f09974150f9e6553795c7f739178320967b56b6488a063f14068d4d8522e",
+        "line": 3626,
+        "version": "30.0",
+        "scale_id": "IM",
+        "domain_source": "Occupational Expert",
+        "recommend_suppress": "n/a"
+      },
+      "mapping_note": "O*NET occupation/activity linkage is verbatim data. Deliverable-family mapping and selection are author-curated, not O*NET claims."
+    },
+    {
+      "profession": "Emergency Management Directors",
+      "occupation_code": "11-9161.00",
+      "activity": "Thinking Creatively",
+      "activity_id": "4.A.2.b.2",
+      "deliverable_families": [
+        "spreadsheet",
+        "document",
+        "presentation"
+      ],
+      "onet_importance": 3.65,
+      "inventory_origin": "curated_onet_smoke_subset",
+      "activity_provenance": {
+        "source_id": "onet30_work_activities",
+        "sha256": "c360f09974150f9e6553795c7f739178320967b56b6488a063f14068d4d8522e",
+        "line": 3630,
+        "version": "30.0",
+        "scale_id": "IM",
+        "domain_source": "Occupational Expert",
+        "recommend_suppress": "n/a"
+      },
+      "mapping_note": "O*NET occupation/activity linkage is verbatim data. Deliverable-family mapping and selection are author-curated, not O*NET claims."
+    },
+    {
+      "profession": "Emergency Management Directors",
+      "occupation_code": "11-9161.00",
+      "activity": "Documenting/Recording Information",
+      "activity_id": "4.A.3.b.6",
+      "deliverable_families": [
+        "spreadsheet",
+        "document",
+        "presentation"
+      ],
+      "onet_importance": 4.24,
+      "inventory_origin": "curated_onet_smoke_subset",
+      "activity_provenance": {
+        "source_id": "onet30_work_activities",
+        "sha256": "c360f09974150f9e6553795c7f739178320967b56b6488a063f14068d4d8522e",
+        "line": 3656,
+        "version": "30.0",
+        "scale_id": "IM",
+        "domain_source": "Occupational Expert",
+        "recommend_suppress": "n/a"
+      },
+      "mapping_note": "O*NET occupation/activity linkage is verbatim data. Deliverable-family mapping and selection are author-curated, not O*NET claims."
+    },
+    {
+      "profession": "Accountants and Auditors",
+      "occupation_code": "13-2011.00",
+      "activity": "Getting Information",
+      "activity_id": "4.A.1.a.1",
+      "deliverable_families": [
+        "spreadsheet",
+        "document",
+        "presentation"
+      ],
+      "onet_importance": 4.46,
+      "inventory_origin": "curated_onet_smoke_subset",
+      "activity_provenance": {
+        "source_id": "onet30_work_activities",
+        "sha256": "c360f09974150f9e6553795c7f739178320967b56b6488a063f14068d4d8522e",
+        "line": 6972,
+        "version": "30.0",
+        "scale_id": "IM",
+        "domain_source": "Analyst - Transition",
+        "recommend_suppress": "N"
+      },
+      "mapping_note": "O*NET occupation/activity linkage is verbatim data. Deliverable-family mapping and selection are author-curated, not O*NET claims."
+    },
+    {
+      "profession": "Accountants and Auditors",
+      "occupation_code": "13-2011.00",
+      "activity": "Analyzing Data or Information",
+      "activity_id": "4.A.2.a.4",
+      "deliverable_families": [
+        "spreadsheet",
+        "document",
+        "presentation"
+      ],
+      "onet_importance": 4.13,
+      "inventory_origin": "curated_onet_smoke_subset",
+      "activity_provenance": {
+        "source_id": "onet30_work_activities",
+        "sha256": "c360f09974150f9e6553795c7f739178320967b56b6488a063f14068d4d8522e",
+        "line": 6988,
+        "version": "30.0",
+        "scale_id": "IM",
+        "domain_source": "Analyst - Transition",
+        "recommend_suppress": "N"
+      },
+      "mapping_note": "O*NET occupation/activity linkage is verbatim data. Deliverable-family mapping and selection are author-curated, not O*NET claims."
+    },
+    {
+      "profession": "Accountants and Auditors",
+      "occupation_code": "13-2011.00",
+      "activity": "Thinking Creatively",
+      "activity_id": "4.A.2.b.2",
+      "deliverable_families": [
+        "spreadsheet",
+        "document",
+        "presentation"
+      ],
+      "onet_importance": 3.33,
+      "inventory_origin": "curated_onet_smoke_subset",
+      "activity_provenance": {
+        "source_id": "onet30_work_activities",
+        "sha256": "c360f09974150f9e6553795c7f739178320967b56b6488a063f14068d4d8522e",
+        "line": 6992,
+        "version": "30.0",
+        "scale_id": "IM",
+        "domain_source": "Analyst - Transition",
+        "recommend_suppress": "N"
+      },
+      "mapping_note": "O*NET occupation/activity linkage is verbatim data. Deliverable-family mapping and selection are author-curated, not O*NET claims."
+    },
+    {
+      "profession": "Accountants and Auditors",
+      "occupation_code": "13-2011.00",
+      "activity": "Documenting/Recording Information",
+      "activity_id": "4.A.3.b.6",
+      "deliverable_families": [
+        "spreadsheet",
+        "document",
+        "presentation"
+      ],
+      "onet_importance": 4.27,
+      "inventory_origin": "curated_onet_smoke_subset",
+      "activity_provenance": {
+        "source_id": "onet30_work_activities",
+        "sha256": "c360f09974150f9e6553795c7f739178320967b56b6488a063f14068d4d8522e",
+        "line": 7018,
+        "version": "30.0",
+        "scale_id": "IM",
+        "domain_source": "Analyst - Transition",
+        "recommend_suppress": "N"
+      },
+      "mapping_note": "O*NET occupation/activity linkage is verbatim data. Deliverable-family mapping and selection are author-curated, not O*NET claims."
+    },
+    {
+      "profession": "Operations Research Analysts",
+      "occupation_code": "15-2031.00",
+      "activity": "Getting Information",
+      "activity_id": "4.A.1.a.1",
+      "deliverable_families": [
+        "spreadsheet",
+        "document",
+        "presentation"
+      ],
+      "onet_importance": 4.8,
+      "inventory_origin": "curated_onet_smoke_subset",
+      "activity_provenance": {
+        "source_id": "onet30_work_activities",
+        "sha256": "c360f09974150f9e6553795c7f739178320967b56b6488a063f14068d4d8522e",
+        "line": 10170,
+        "version": "30.0",
+        "scale_id": "IM",
+        "domain_source": "Occupational Expert",
+        "recommend_suppress": "n/a"
+      },
+      "mapping_note": "O*NET occupation/activity linkage is verbatim data. Deliverable-family mapping and selection are author-curated, not O*NET claims."
+    },
+    {
+      "profession": "Operations Research Analysts",
+      "occupation_code": "15-2031.00",
+      "activity": "Analyzing Data or Information",
+      "activity_id": "4.A.2.a.4",
+      "deliverable_families": [
+        "spreadsheet",
+        "document",
+        "presentation"
+      ],
+      "onet_importance": 4.67,
+      "inventory_origin": "curated_onet_smoke_subset",
+      "activity_provenance": {
+        "source_id": "onet30_work_activities",
+        "sha256": "c360f09974150f9e6553795c7f739178320967b56b6488a063f14068d4d8522e",
+        "line": 10186,
+        "version": "30.0",
+        "scale_id": "IM",
+        "domain_source": "Occupational Expert",
+        "recommend_suppress": "n/a"
+      },
+      "mapping_note": "O*NET occupation/activity linkage is verbatim data. Deliverable-family mapping and selection are author-curated, not O*NET claims."
+    },
+    {
+      "profession": "Operations Research Analysts",
+      "occupation_code": "15-2031.00",
+      "activity": "Thinking Creatively",
+      "activity_id": "4.A.2.b.2",
+      "deliverable_families": [
+        "spreadsheet",
+        "document",
+        "presentation"
+      ],
+      "onet_importance": 4.1,
+      "inventory_origin": "curated_onet_smoke_subset",
+      "activity_provenance": {
+        "source_id": "onet30_work_activities",
+        "sha256": "c360f09974150f9e6553795c7f739178320967b56b6488a063f14068d4d8522e",
+        "line": 10190,
+        "version": "30.0",
+        "scale_id": "IM",
+        "domain_source": "Occupational Expert",
+        "recommend_suppress": "n/a"
+      },
+      "mapping_note": "O*NET occupation/activity linkage is verbatim data. Deliverable-family mapping and selection are author-curated, not O*NET claims."
+    },
+    {
+      "profession": "Operations Research Analysts",
+      "occupation_code": "15-2031.00",
+      "activity": "Documenting/Recording Information",
+      "activity_id": "4.A.3.b.6",
+      "deliverable_families": [
+        "spreadsheet",
+        "document",
+        "presentation"
+      ],
+      "onet_importance": 3.43,
+      "inventory_origin": "curated_onet_smoke_subset",
+      "activity_provenance": {
+        "source_id": "onet30_work_activities",
+        "sha256": "c360f09974150f9e6553795c7f739178320967b56b6488a063f14068d4d8522e",
+        "line": 10216,
+        "version": "30.0",
+        "scale_id": "IM",
+        "domain_source": "Occupational Expert",
+        "recommend_suppress": "n/a"
+      },
+      "mapping_note": "O*NET occupation/activity linkage is verbatim data. Deliverable-family mapping and selection are author-curated, not O*NET claims."
+    },
+    {
+      "profession": "Geoscientists, Except Hydrologists and Geographers",
+      "occupation_code": "19-2042.00",
+      "activity": "Getting Information",
+      "activity_id": "4.A.1.a.1",
+      "deliverable_families": [
+        "spreadsheet",
+        "document",
+        "presentation"
+      ],
+      "onet_importance": 4.69,
+      "inventory_origin": "curated_onet_smoke_subset",
+      "activity_provenance": {
+        "source_id": "onet30_work_activities",
+        "sha256": "c360f09974150f9e6553795c7f739178320967b56b6488a063f14068d4d8522e",
+        "line": 17222,
+        "version": "30.0",
+        "scale_id": "IM",
+        "domain_source": "Occupational Expert",
+        "recommend_suppress": "n/a"
+      },
+      "mapping_note": "O*NET occupation/activity linkage is verbatim data. Deliverable-family mapping and selection are author-curated, not O*NET claims."
+    },
+    {
+      "profession": "Geoscientists, Except Hydrologists and Geographers",
+      "occupation_code": "19-2042.00",
+      "activity": "Analyzing Data or Information",
+      "activity_id": "4.A.2.a.4",
+      "deliverable_families": [
+        "spreadsheet",
+        "document",
+        "presentation"
+      ],
+      "onet_importance": 4.68,
+      "inventory_origin": "curated_onet_smoke_subset",
+      "activity_provenance": {
+        "source_id": "onet30_work_activities",
+        "sha256": "c360f09974150f9e6553795c7f739178320967b56b6488a063f14068d4d8522e",
+        "line": 17238,
+        "version": "30.0",
+        "scale_id": "IM",
+        "domain_source": "Occupational Expert",
+        "recommend_suppress": "n/a"
+      },
+      "mapping_note": "O*NET occupation/activity linkage is verbatim data. Deliverable-family mapping and selection are author-curated, not O*NET claims."
+    },
+    {
+      "profession": "Geoscientists, Except Hydrologists and Geographers",
+      "occupation_code": "19-2042.00",
+      "activity": "Thinking Creatively",
+      "activity_id": "4.A.2.b.2",
+      "deliverable_families": [
+        "spreadsheet",
+        "document",
+        "presentation"
+      ],
+      "onet_importance": 4.25,
+      "inventory_origin": "curated_onet_smoke_subset",
+      "activity_provenance": {
+        "source_id": "onet30_work_activities",
+        "sha256": "c360f09974150f9e6553795c7f739178320967b56b6488a063f14068d4d8522e",
+        "line": 17242,
+        "version": "30.0",
+        "scale_id": "IM",
+        "domain_source": "Occupational Expert",
+        "recommend_suppress": "n/a"
+      },
+      "mapping_note": "O*NET occupation/activity linkage is verbatim data. Deliverable-family mapping and selection are author-curated, not O*NET claims."
+    },
+    {
+      "profession": "Geoscientists, Except Hydrologists and Geographers",
+      "occupation_code": "19-2042.00",
+      "activity": "Documenting/Recording Information",
+      "activity_id": "4.A.3.b.6",
+      "deliverable_families": [
+        "spreadsheet",
+        "document",
+        "presentation"
+      ],
+      "onet_importance": 4.03,
+      "inventory_origin": "curated_onet_smoke_subset",
+      "activity_provenance": {
+        "source_id": "onet30_work_activities",
+        "sha256": "c360f09974150f9e6553795c7f739178320967b56b6488a063f14068d4d8522e",
+        "line": 17268,
+        "version": "30.0",
+        "scale_id": "IM",
+        "domain_source": "Occupational Expert",
+        "recommend_suppress": "n/a"
+      },
+      "mapping_note": "O*NET occupation/activity linkage is verbatim data. Deliverable-family mapping and selection are author-curated, not O*NET claims."
+    }
+  ]
+}

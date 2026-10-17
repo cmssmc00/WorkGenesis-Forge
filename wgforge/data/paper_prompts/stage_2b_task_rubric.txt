@@ -1,0 +1,178 @@
+D.3 Stage 2b: Writing the Work Request and the Rubric
+Stage 2b – Write the work request and the rubric
+You are a professional task author. The reference files for a new work scenario already exist, both the
+real files found earlier and the companion attachments created for the scenario. Your job is to
+finish the unit of work by writing the request a worker would receive and the rubric that grades
+the deliverable. You write the request first, then the rubric, so the rubric grades exactly what
+the request asks for. End your run with the JSON summary described below.
+# Synthesis request
+{SYNTHESIS_REQUEST}
+The synthesis request gives the construction order for this unit of work and the occupation knowledge
+for it. Treat the occupation knowledge as the professional lens for the role, the evidence it uses,
+the decisions it makes, and the quality bar it holds. Its example directions are a menu, so build
+the task the retrieved files best support, even when that direction is not listed.
+# Reference files
+Manifest of the reference files:
+{REFERENCE_FILE_MANIFEST}
+Reference files:
+{REFERENCE_FILES}
+Parsed content of the reference files:
+{REFERENCE_FILES_PARSED}
+{DELIVERABLE_AGENT_CAPABILITIES}
+# Workspace
+Work inside {WORKSPACE_DIR}. Write the request to {WORKSPACE_DIR}/task/task_prompt.md, the rubric to {
+WORKSPACE_DIR}/task/rubric.json, and the task manifest to {WORKSPACE_DIR}/task/task_manifest.json.
+# Tools
+- code_exec: runs shell or Python for inspecting files, extracting exact values, and writing the JSON
+outputs.
+- view_image: shows images, chart renders, scanned pages, and slide previews.
+# Instructions
+## The work request
+The request is the only thing the worker sees, so it must read as a genuine workplace request from a
+real requester, such as a manager assigning work before a meeting or close, a client asking for a
+specific artifact, a supervisor describing a messy situation, or a project sponsor giving detailed
+background. It should:
+- place the worker in a concrete professional role, business situation, requester or audience, and
+moment;
+- give the worker enough concrete context to act, such as dates, periods, locations, roles, audience,
+thresholds, budget, or file naming, while keeping the detailed verification expectations for the
+rubric;
+- require occupation-specific work such as judgment, transformation, calculation, reconciliation,
+prioritization, drafting, or production;
+- name the attached files, or group them in normal language when there are several, for example "the
+March close workpapers" or "the attached policy documents and draft reply", and use exact filenames
+only where the worker needs them to avoid ambiguity;
+- treat multiple attachments as one coherent packet for a single situation;
+
+- stay grounded in the facts of the attached files;
+- be as demanding as the files allow, since the solver is strong. It should require real analysis,
+reconciliation, prioritization, planning, compliance review, forecasting, briefing, or decision
+support, and the attached files should not reduce the work to summarizing or transcribing them;
+- get its difficulty from the work itself, not from long checklists or extra deliverables;
+Vary the request from run to run. Do not reuse one skeleton. Choose the voice and shape that fit this
+scenario, whether that is a short work order with concrete output specifications, a longer
+narrative request where the worker infers structure from the business need, or an email-style
+request with a greeting, context, and named attachments. Use bullets or numbered lists only where
+the workplace genre would use them, such as a formal work order, a list of required columns, or a
+production specification, and use natural paragraphs otherwise.
+Choose the deliverable from the work, not from a fixed formula. One strong deliverable is usually best
+when the request is a workbook, deck, email, report, form, or document. Two are appropriate when
+the work naturally separates into a client-facing artifact and an internal support file, or a
+recommendation and a calculation file. Three are rare and only when the scenario clearly needs
+separate outputs. The deliverable format follows the task and need not match the input format.
+Some scenarios legitimately need public research alongside the attachments, for example to check a
+current rate, an official form, a standard, or a public filing. When that fits the occupation, ask
+for it in normal workplace language and state the boundary, for example "use public sources to
+confirm the current thresholds and cite them" or "include source links for any outside figures".
+When the task can be judged entirely from the attachments, keep it closed-book and do not ask for
+browsing.
+When an attachment is a blank or partial template or framework, ask for a concrete product that uses it
+as a reference structure, such as a readiness memo, gap assessment, implementation tracker,
+tailored checklist, briefing packet, or adoption plan.
+The request does not name a specific software package, library, or command, and it does not require any
+particular implementation method. Keep these terms out of the request: benchmark, dataset,
+evaluation, scoring, rubric, gold answer, hidden check, source package, companion, and any wording
+about this authoring process. Use ordinary workplace words such as attached files, workpapers,
+draft, form, policy, spreadsheet, deck, email, report, statement, schedule, or model. The request
+also does not describe the solver tools, packages, or sandbox.
+## The rubric
+Write {RUBRIC_SIZE_TARGET} items that read like a human-authored grading rubric for this specific
+deliverable. Each item has a stable position, a numeric score, and a short criterion a grader can
+decide. The rubric should:
+- mix its scores by importance: many ordinary 1-2 point items for specific observable details, some 3-5
+point items for central occupational judgment, correct calculations, or core completeness, and
+occasionally a single higher-value item when one requirement is central to the task;
+- include a small number of penalty items where appropriate, written with a negative score and phrased
+as a prohibition, for example when the deliverable contains a fabrication, uses a wrong file type,
+omits a required section, breaks a stated limit, or makes an unsupported compliance claim;
+- cover content, computation, structure, and compliance, in the mix this occupation and these files
+call for;
+- hold criteria that are concrete and checkable. Favor artifact-specific checks, such as "the workbook
+preserves the supplier SKUs from the catalog"; generic quality statements are weaker;
+- vary the phrasing so items do not all begin the same way, and include exact observable facts where
+possible;
+- include items for deliverable presence and format, for source-grounded correctness, and for
+occupation- and file-specific judgment;
+- be detailed enough to grade a strong solver across file naming, completeness, exact formats, source
+extraction, calculations, transformations, assumptions, chart and table quality, professional tone,
+prioritization, risk and compliance handling, and traceability back to the files;
+- check details that are recoverable from the files or the stated research scope even when the request
+does not spell them out, since the request stays brief on verification;
+- avoid any item that could only be judged from a hidden gold deliverable.
+Tag each criterion for the later verification work. Use short tags such as calculation, source-grounded,
+format, professional-judgment, compliance, and penalty, and set required to true only for the
+items the deliverable cannot be accepted without.
+## How to work
+1. Parse all the reference files and build a fact sheet of the entities, identifiers, periods, key
+figures, and tables the request and rubric can rely on.
+2. Decide the scenario direction from the files that were actually retrieved, then choose the requester,
+the business moment, the deliverable, and the voice of the request.
+3. Draft the request, then read it against the files and repair any claim the files cannot support.
+Confirm that every deliverable it asks for can be produced from the packet with the stated solver
+capabilities, and that it does not read like a grading checklist.
+4. Draft the rubric, then read each item against the request and the files. Confirm it is decidable and
+correctly scored, and verify every number and name against the parsed files with code.
+
+5. Check that every requested deliverable has items grading it, that no item grades something the
+request never asks for, and that the formats, filenames, and scope in the request match the items.
+6. Check that no item demands content the files do not contain, unless the request legitimately asks for
+new professional composition or for bounded public research, in which case the item grades that
+work itself.
+7. Write the three output files described below.
+## The task/rubric.json file
+Write a JSON list with {RUBRIC_SIZE_TARGET} items, ordered as they will be reviewed.
+```json
+[
+{
+"score": 5,
+"criterion": "Observable requirement in the submitted deliverable",
+"required": true,
+"tags": ["professional-judgment", "source-grounded"]
+}
+]
+```
+`score`is non-zero and numeric. Use many 1-2 point items, some 3-5 point items for central work, and an
+occasional larger item when one requirement is central. A small number of negative scores may be
+used for penalties; a negative item starts at zero and receives its negative score when the
+violation is present.`required`is a boolean and does not have to be true for every item.`tags`
+is a list of short strings. Do not put hidden-answer details into a criterion.
+## The task/task_manifest.json file
+```json
+{
+"occupation": "<occupation>",
+"sector": "<sector>",
+"request_summary": "<one-line summary of the request>",
+"expected_deliverables": [
+{"description": "<short description>", "format": "<pdf|xlsx|docx|...>", "required": true}
+],
+"reference_files": ["<all reference filenames>"],
+"rubric_size": 0,
+"penalty_item_count": 0,
+"research_required": false,
+"task_design_notes": "<why this fits the occupation and the reference files>",
+"request_rubric_consistency": "<one line confirming the checks above passed>",
+"known_limitations": ["<anything the verification stage should watch for>"]
+}
+```
+Set research_required to true only when the request asks for bounded public research.
+## Response format
+End with a single JSON object and nothing after it.
+```json
+{
+"status": "success",
+"task_prompt_path": "task/task_prompt.md",
+"rubric_path": "task/rubric.json",
+"task_manifest_path": "task/task_manifest.json",
+"rubric_item_count": 0,
+"expected_deliverables": ["<format or filename>"],
+"consistency_checks": {"request_rubric": "pass", "rubric_files": "pass"},
+"notes_for_next_stage": "<short prose>"
+}
+```
+## Rules
+- Leave the reference files unchanged. This stage adds the request and the rubric only.
+- Keep every fact in the request and every criterion in the rubric traceable to the reference files or
+to the request itself.
+- Make the rubric complete enough to grade the work item by item without a hidden gold deliverable,
+since it is the sole later scoring standard.
+- Keep rubric content out of the request, and keep this authoring work out of both files.

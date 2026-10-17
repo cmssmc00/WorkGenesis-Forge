@@ -1,0 +1,24 @@
+# Locally chosen versions. The paper does not publish a complete environment lock.
+openpyxl==3.1.5
+python-docx==1.2.0
+python-pptx==1.0.2
+reportlab==4.4.9
+pypdf==6.10.0
+Pillow==12.3.0
+numpy==2.2.6
+pandas==2.3.1
+scipy==1.16.1
+matplotlib==3.10.5
+seaborn==0.13.2
+pdfplumber==0.11.7
+beautifulsoup4==4.13.4
+lxml==6.0.0
+requests==2.32.4
+scikit-learn==1.7.1
+sympy==1.14.0
+polars==1.32.3
+plotly==6.3.0
+PyMuPDF==1.26.4
+weasyprint==66.0
+opencv-python-headless==4.12.0.88
+playwright==1.55.0

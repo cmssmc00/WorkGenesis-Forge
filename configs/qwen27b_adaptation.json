@@ -1,0 +1,306 @@
+{
+  "profile": "qwen27b_adaptation",
+  "profile_status": "Implemented methodological approximation; not an empirical or exact harness reproduction",
+  "paper_experiment": {
+    "teacher": "GLM-5.2",
+    "student": "Qwen3.6-35B-A3B",
+    "target_trajectories": 20000,
+    "occupations": 65,
+    "context_tokens": 256000,
+    "compaction_trigger": 0.7
+  },
+  "deviations": [
+    "Local OpenAI-compatible bounded runner replaces unreleased Stirrup/E2B image",
+    "Human rights/semantic review and HMAC export gates are additional safeguards",
+    "Fixture demo is separate from production",
+    "Training filter and assistant-only masking are operator adaptations",
+    "No official GDPval evaluation or training was executed",
+    "Target student is user-requested Qwen3.8-27B; optional student calibration is not a paper stage"
+  ],
+  "roles": {
+    "author": {
+      "endpoint": "https://REPLACE_WITH_APPROVED_PROVIDER_HOST/v1/chat/completions",
+      "allowed_hosts": [
+        "REPLACE_WITH_APPROVED_PROVIDER_HOST"
+      ],
+      "api_key_env": "WG_PROVIDER_API_KEY",
+      "model": "REPLACE_WITH_PROVIDER_GLM_5_2_MODEL_ID",
+      "privacy": {
+        "public_upload_approved": false,
+        "private_upload_approved": false
+      },
+      "budget": {
+        "max_cost_usd": 5.0,
+        "input_usd_per_million": 10.0,
+        "output_usd_per_million": 50.0,
+        "max_requests": 16,
+        "max_steps": 16,
+        "max_input_tokens": 262144,
+        "max_output_tokens": 8192,
+        "max_total_tokens": 400000
+      },
+      "timeout_seconds": 120,
+      "max_run_seconds": 1800,
+      "max_retries": 0,
+      "max_response_bytes": 4000000,
+      "code": {
+        "enable_code": false
+      }
+    },
+    "solver": {
+      "endpoint": "https://REPLACE_WITH_APPROVED_PROVIDER_HOST/v1/chat/completions",
+      "allowed_hosts": [
+        "REPLACE_WITH_APPROVED_PROVIDER_HOST"
+      ],
+      "api_key_env": "WG_PROVIDER_API_KEY",
+      "model": "REPLACE_WITH_PROVIDER_GLM_5_2_MODEL_ID",
+      "privacy": {
+        "public_upload_approved": false,
+        "private_upload_approved": false
+      },
+      "budget": {
+        "max_cost_usd": 5.0,
+        "input_usd_per_million": 10.0,
+        "output_usd_per_million": 50.0,
+        "max_requests": 16,
+        "max_steps": 16,
+        "max_input_tokens": 262144,
+        "max_output_tokens": 8192,
+        "max_total_tokens": 400000
+      },
+      "timeout_seconds": 120,
+      "max_run_seconds": 1800,
+      "max_retries": 0,
+      "max_response_bytes": 4000000,
+      "code": {
+        "enable_code": false
+      }
+    },
+    "judge": {
+      "endpoint": "https://REPLACE_WITH_APPROVED_PROVIDER_HOST/v1/chat/completions",
+      "allowed_hosts": [
+        "REPLACE_WITH_APPROVED_PROVIDER_HOST"
+      ],
+      "api_key_env": "WG_PROVIDER_API_KEY",
+      "model": "REPLACE_WITH_PROVIDER_GLM_5_2_MODEL_ID",
+      "privacy": {
+        "public_upload_approved": false,
+        "private_upload_approved": false
+      },
+      "budget": {
+        "max_cost_usd": 5.0,
+        "input_usd_per_million": 10.0,
+        "output_usd_per_million": 50.0,
+        "max_requests": 16,
+        "max_steps": 16,
+        "max_input_tokens": 262144,
+        "max_output_tokens": 8192,
+        "max_total_tokens": 400000
+      },
+      "timeout_seconds": 120,
+      "max_run_seconds": 1800,
+      "max_retries": 0,
+      "max_response_bytes": 4000000,
+      "code": {
+        "enable_code": false
+      }
+    },
+    "attributor": {
+      "endpoint": "https://REPLACE_WITH_APPROVED_PROVIDER_HOST/v1/chat/completions",
+      "allowed_hosts": [
+        "REPLACE_WITH_APPROVED_PROVIDER_HOST"
+      ],
+      "api_key_env": "WG_PROVIDER_API_KEY",
+      "model": "REPLACE_WITH_PROVIDER_GLM_5_2_MODEL_ID",
+      "privacy": {
+        "public_upload_approved": false,
+        "private_upload_approved": false
+      },
+      "budget": {
+        "max_cost_usd": 5.0,
+        "input_usd_per_million": 10.0,
+        "output_usd_per_million": 50.0,
+        "max_requests": 16,
+        "max_steps": 16,
+        "max_input_tokens": 262144,
+        "max_output_tokens": 8192,
+        "max_total_tokens": 400000
+      },
+      "timeout_seconds": 120,
+      "max_run_seconds": 1800,
+      "max_retries": 0,
+      "max_response_bytes": 4000000,
+      "code": {
+        "enable_code": false
+      }
+    },
+    "repairer": {
+      "endpoint": "https://REPLACE_WITH_APPROVED_PROVIDER_HOST/v1/chat/completions",
+      "allowed_hosts": [
+        "REPLACE_WITH_APPROVED_PROVIDER_HOST"
+      ],
+      "api_key_env": "WG_PROVIDER_API_KEY",
+      "model": "REPLACE_WITH_PROVIDER_GLM_5_2_MODEL_ID",
+      "privacy": {
+        "public_upload_approved": false,
+        "private_upload_approved": false
+      },
+      "budget": {
+        "max_cost_usd": 5.0,
+        "input_usd_per_million": 10.0,
+        "output_usd_per_million": 50.0,
+        "max_requests": 16,
+        "max_steps": 16,
+        "max_input_tokens": 262144,
+        "max_output_tokens": 8192,
+        "max_total_tokens": 400000
+      },
+      "timeout_seconds": 120,
+      "max_run_seconds": 1800,
+      "max_retries": 0,
+      "max_response_bytes": 4000000,
+      "code": {
+        "enable_code": false
+      }
+    },
+    "repair_reviewer": {
+      "endpoint": "https://REPLACE_WITH_APPROVED_PROVIDER_HOST/v1/chat/completions",
+      "allowed_hosts": [
+        "REPLACE_WITH_APPROVED_PROVIDER_HOST"
+      ],
+      "api_key_env": "WG_PROVIDER_API_KEY",
+      "model": "REPLACE_WITH_PROVIDER_GLM_5_2_MODEL_ID",
+      "privacy": {
+        "public_upload_approved": false,
+        "private_upload_approved": false
+      },
+      "budget": {
+        "max_cost_usd": 5.0,
+        "input_usd_per_million": 10.0,
+        "output_usd_per_million": 50.0,
+        "max_requests": 16,
+        "max_steps": 16,
+        "max_input_tokens": 262144,
+        "max_output_tokens": 8192,
+        "max_total_tokens": 400000
+      },
+      "timeout_seconds": 120,
+      "max_run_seconds": 1800,
+      "max_retries": 0,
+      "max_response_bytes": 4000000,
+      "code": {
+        "enable_code": false
+      }
+    },
+    "teacher": {
+      "endpoint": "https://REPLACE_WITH_APPROVED_PROVIDER_HOST/v1/chat/completions",
+      "allowed_hosts": [
+        "REPLACE_WITH_APPROVED_PROVIDER_HOST"
+      ],
+      "api_key_env": "WG_PROVIDER_API_KEY",
+      "model": "REPLACE_WITH_PROVIDER_GLM_5_2_MODEL_ID",
+      "privacy": {
+        "public_upload_approved": false,
+        "private_upload_approved": false
+      },
+      "budget": {
+        "max_cost_usd": 5.0,
+        "input_usd_per_million": 10.0,
+        "output_usd_per_million": 50.0,
+        "max_requests": 16,
+        "max_steps": 16,
+        "max_input_tokens": 262144,
+        "max_output_tokens": 8192,
+        "max_total_tokens": 400000
+      },
+      "timeout_seconds": 120,
+      "max_run_seconds": 1800,
+      "max_retries": 0,
+      "max_response_bytes": 4000000,
+      "code": {
+        "enable_code": false
+      }
+    },
+    "student": {
+      "endpoint": "https://REPLACE_WITH_APPROVED_PROVIDER_HOST/v1/chat/completions",
+      "allowed_hosts": [
+        "REPLACE_WITH_APPROVED_PROVIDER_HOST"
+      ],
+      "api_key_env": "WG_PROVIDER_API_KEY",
+      "model": "REPLACE_WITH_PROVIDER_QWEN_3_8_27B_MODEL_ID",
+      "privacy": {
+        "public_upload_approved": false,
+        "private_upload_approved": false
+      },
+      "budget": {
+        "max_cost_usd": 5.0,
+        "input_usd_per_million": 10.0,
+        "output_usd_per_million": 50.0,
+        "max_requests": 16,
+        "max_steps": 16,
+        "max_input_tokens": 262144,
+        "max_output_tokens": 8192,
+        "max_total_tokens": 400000
+      },
+      "timeout_seconds": 120,
+      "max_run_seconds": 1800,
+      "max_retries": 0,
+      "max_response_bytes": 4000000,
+      "code": {
+        "enable_code": false
+      }
+    }
+  },
+  "campaign_budget": {
+    "max_cost_usd": 15,
+    "max_requests": 80,
+    "max_tokens": 2000000
+  },
+  "planning": {
+    "count": 1,
+    "seed": 42,
+    "sampling": "occupation_balanced",
+    "instances_per_slot": 4
+  },
+  "sources": {
+    "adapter": "serpapi",
+    "enable_paid_search": false,
+    "allowed_hosts": [
+      "REPLACE_WITH_REVIEWED_SOURCE_HOST"
+    ],
+    "max_bytes": 16000000,
+    "timeout_seconds": 45,
+    "allowed_mime_types": [
+      "application/pdf",
+      "text/csv",
+      "text/plain",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ],
+    "serpapi_key_env": "SERPAPI_API_KEY"
+  },
+  "acquisition": {
+    "max_searches": 4,
+    "max_anchors": 2
+  },
+  "repair": {
+    "max_rounds": 6,
+    "repeated_defect_limit": 3,
+    "max_restarts_per_plan": 1
+  },
+  "calibration": {
+    "enabled": true,
+    "low": 0.2,
+    "high": 0.8
+  },
+  "evidence_char_limit": 300000,
+  "audit_char_limit": 600000,
+  "minimum_source_chars": 200,
+  "configuration_note": "Example per-token rates are deliberately illustrative, not verified billing rates. Replace endpoint, model IDs, current rates, privacy approvals, and approved source hosts before --approve-live.",
+  "adaptation": {
+    "student": "Qwen3.8-27B",
+    "paper_student": "Qwen3.6-35B-A3B",
+    "verified_architecture_support": false,
+    "tokenizer_pin_source": "Existing user pipeline pinned Qwen/Qwen3.8-27B revision 1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0; verify local model identity before training"
+  }
+}

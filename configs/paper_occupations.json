@@ -1,0 +1,673 @@
+{
+  "schema_version": 1,
+  "source": "https://arxiv.org/html/2609.39325v1#A1.T2",
+  "source_revision": "2609.39325v1",
+  "occupations": [
+    {
+      "sector_code": "FIN",
+      "sector": "Finance and Insurance",
+      "occupation": "Customer Service Representatives",
+      "onet_soc_code": "43-4051.00",
+      "onet_soc_codes": [
+        "43-4051.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "FIN",
+      "sector": "Finance and Insurance",
+      "occupation": "Financial Managers",
+      "onet_soc_code": "11-3031.00",
+      "onet_soc_codes": [
+        "11-3031.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "FIN",
+      "sector": "Finance and Insurance",
+      "occupation": "Financial and Investment Analysts",
+      "onet_soc_code": "13-2051.00",
+      "onet_soc_codes": [
+        "13-2051.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "FIN",
+      "sector": "Finance and Insurance",
+      "occupation": "Personal Financial Advisors",
+      "onet_soc_code": "13-2052.00",
+      "onet_soc_codes": [
+        "13-2052.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "FIN",
+      "sector": "Finance and Insurance",
+      "occupation": "Securities, Commodities, and Financial Services Sales Agents",
+      "onet_soc_code": "41-3031.00",
+      "onet_soc_codes": [
+        "41-3031.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "GOV",
+      "sector": "Government",
+      "occupation": "Administrative Services Managers",
+      "onet_soc_code": "11-3012.00",
+      "onet_soc_codes": [
+        "11-3012.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "GOV",
+      "sector": "Government",
+      "occupation": "Child, Family, and School Social Workers",
+      "onet_soc_code": "21-1021.00",
+      "onet_soc_codes": [
+        "21-1021.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "GOV",
+      "sector": "Government",
+      "occupation": "Compliance Officers",
+      "onet_soc_code": "13-1041.00",
+      "onet_soc_codes": [
+        "13-1041.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "GOV",
+      "sector": "Government",
+      "occupation": "Court, Municipal, and License Clerks",
+      "onet_soc_code": "43-4031.00",
+      "onet_soc_codes": [
+        "43-4031.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "GOV",
+      "sector": "Government",
+      "occupation": "First-Line Supervisors of Police and Detectives",
+      "onet_soc_code": "33-1012.00",
+      "onet_soc_codes": [
+        "33-1012.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "GOV",
+      "sector": "Government",
+      "occupation": "Public Safety Telecommunicators",
+      "onet_soc_code": "43-5031.00",
+      "onet_soc_codes": [
+        "43-5031.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "GOV",
+      "sector": "Government",
+      "occupation": "Recreation Workers",
+      "onet_soc_code": "39-9032.00",
+      "onet_soc_codes": [
+        "39-9032.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "HCS",
+      "sector": "Health Care and Social Assistance",
+      "occupation": "First-Line Supervisors of Office and Administrative Support Workers",
+      "onet_soc_code": "43-1011.00",
+      "onet_soc_codes": [
+        "43-1011.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "HCS",
+      "sector": "Health Care and Social Assistance",
+      "occupation": "Medical Secretaries and Administrative Assistants",
+      "onet_soc_code": "43-6013.00",
+      "onet_soc_codes": [
+        "43-6013.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "HCS",
+      "sector": "Health Care and Social Assistance",
+      "occupation": "Medical and Health Services Managers",
+      "onet_soc_code": "11-9111.00",
+      "onet_soc_codes": [
+        "11-9111.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "HCS",
+      "sector": "Health Care and Social Assistance",
+      "occupation": "Nurse Practitioners",
+      "onet_soc_code": "29-1171.00",
+      "onet_soc_codes": [
+        "29-1171.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "HCS",
+      "sector": "Health Care and Social Assistance",
+      "occupation": "Registered Nurses",
+      "onet_soc_code": "29-1141.00",
+      "onet_soc_codes": [
+        "29-1141.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "INF",
+      "sector": "Information",
+      "occupation": "Audio and Video Technicians",
+      "onet_soc_code": "27-4011.00",
+      "onet_soc_codes": [
+        "27-4011.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "INF",
+      "sector": "Information",
+      "occupation": "Editors",
+      "onet_soc_code": "27-3041.00",
+      "onet_soc_codes": [
+        "27-3041.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "INF",
+      "sector": "Information",
+      "occupation": "Film and Video Editors",
+      "onet_soc_code": "27-4032.00",
+      "onet_soc_codes": [
+        "27-4032.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "INF",
+      "sector": "Information",
+      "occupation": "News Analysts, Reporters, and Journalists",
+      "onet_soc_code": "27-3023.00",
+      "onet_soc_codes": [
+        "27-3023.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "INF",
+      "sector": "Information",
+      "occupation": "Producers and Directors",
+      "onet_soc_code": "27-2012.00",
+      "onet_soc_codes": [
+        "27-2012.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "INF",
+      "sector": "Information",
+      "occupation": "Web Administrators",
+      "onet_soc_code": "15-1299.01",
+      "onet_soc_codes": [
+        "15-1299.01"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "MFG",
+      "sector": "Manufacturing",
+      "occupation": "Buyers and Purchasing Agents",
+      "onet_soc_code": null,
+      "onet_soc_codes": [
+        "13-1021.00",
+        "13-1022.00",
+        "13-1023.00"
+      ],
+      "mapping_kind": "soc_broad_group",
+      "soc_broad_code": "13-1020",
+      "mapping_note": "Paper uses the broad SOC label. Retain that label and attach all three detailed O*NET occupations; this mapping is reconstructed, not supplied by the authors.",
+      "mapping_evidence": [
+        "https://www.bls.gov/soc/2018/major_groups.htm#13-0000",
+        "https://www.onetonline.org/link/summary/13-1021.00",
+        "https://www.onetonline.org/link/summary/13-1022.00",
+        "https://www.onetonline.org/link/summary/13-1023.00"
+      ]
+    },
+    {
+      "sector_code": "MFG",
+      "sector": "Manufacturing",
+      "occupation": "First-Line Supervisors of Production and Operating Workers",
+      "onet_soc_code": "51-1011.00",
+      "onet_soc_codes": [
+        "51-1011.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "MFG",
+      "sector": "Manufacturing",
+      "occupation": "Industrial Engineers",
+      "onet_soc_code": "17-2112.00",
+      "onet_soc_codes": [
+        "17-2112.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "MFG",
+      "sector": "Manufacturing",
+      "occupation": "Mechanical Engineering Technologists and Technicians",
+      "onet_soc_code": "17-3027.00",
+      "onet_soc_codes": [
+        "17-3027.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "MFG",
+      "sector": "Manufacturing",
+      "occupation": "Mechanical Engineers",
+      "onet_soc_code": "17-2141.00",
+      "onet_soc_codes": [
+        "17-2141.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "MFG",
+      "sector": "Manufacturing",
+      "occupation": "Shipping, Receiving, and Inventory Clerks",
+      "onet_soc_code": "43-5071.00",
+      "onet_soc_codes": [
+        "43-5071.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "PST",
+      "sector": "Professional, Scientific, and Technical Services",
+      "occupation": "Accountants and Auditors",
+      "onet_soc_code": "13-2011.00",
+      "onet_soc_codes": [
+        "13-2011.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "PST",
+      "sector": "Professional, Scientific, and Technical Services",
+      "occupation": "Biostatisticians",
+      "onet_soc_code": "15-2041.01",
+      "onet_soc_codes": [
+        "15-2041.01"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "PST",
+      "sector": "Professional, Scientific, and Technical Services",
+      "occupation": "Bookkeeping, Accounting, and Auditing Clerks",
+      "onet_soc_code": "43-3031.00",
+      "onet_soc_codes": [
+        "43-3031.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "PST",
+      "sector": "Professional, Scientific, and Technical Services",
+      "occupation": "Civil Engineers",
+      "onet_soc_code": "17-2051.00",
+      "onet_soc_codes": [
+        "17-2051.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "PST",
+      "sector": "Professional, Scientific, and Technical Services",
+      "occupation": "Computer and Information Research Scientists",
+      "onet_soc_code": "15-1221.00",
+      "onet_soc_codes": [
+        "15-1221.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "PST",
+      "sector": "Professional, Scientific, and Technical Services",
+      "occupation": "Computer and Information Systems Managers",
+      "onet_soc_code": "11-3021.00",
+      "onet_soc_codes": [
+        "11-3021.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "PST",
+      "sector": "Professional, Scientific, and Technical Services",
+      "occupation": "Computer User Support Specialists",
+      "onet_soc_code": "15-1232.00",
+      "onet_soc_codes": [
+        "15-1232.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "PST",
+      "sector": "Professional, Scientific, and Technical Services",
+      "occupation": "Data Entry Keyers",
+      "onet_soc_code": "43-9021.00",
+      "onet_soc_codes": [
+        "43-9021.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "PST",
+      "sector": "Professional, Scientific, and Technical Services",
+      "occupation": "Human Resources Specialists",
+      "onet_soc_code": "13-1071.00",
+      "onet_soc_codes": [
+        "13-1071.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "PST",
+      "sector": "Professional, Scientific, and Technical Services",
+      "occupation": "Lawyers",
+      "onet_soc_code": "23-1011.00",
+      "onet_soc_codes": [
+        "23-1011.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "PST",
+      "sector": "Professional, Scientific, and Technical Services",
+      "occupation": "Management Analysts",
+      "onet_soc_code": "13-1111.00",
+      "onet_soc_codes": [
+        "13-1111.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "PST",
+      "sector": "Professional, Scientific, and Technical Services",
+      "occupation": "Project Management Specialists",
+      "onet_soc_code": "13-1082.00",
+      "onet_soc_codes": [
+        "13-1082.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "PST",
+      "sector": "Professional, Scientific, and Technical Services",
+      "occupation": "Secretaries and Administrative Assistants, Except Legal, Medical, and Executive",
+      "onet_soc_code": "43-6014.00",
+      "onet_soc_codes": [
+        "43-6014.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "PST",
+      "sector": "Professional, Scientific, and Technical Services",
+      "occupation": "Social Science Research Assistants",
+      "onet_soc_code": "19-4061.00",
+      "onet_soc_codes": [
+        "19-4061.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "PST",
+      "sector": "Professional, Scientific, and Technical Services",
+      "occupation": "Software Developers",
+      "onet_soc_code": "15-1252.00",
+      "onet_soc_codes": [
+        "15-1252.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "PST",
+      "sector": "Professional, Scientific, and Technical Services",
+      "occupation": "Statisticians",
+      "onet_soc_code": "15-2041.00",
+      "onet_soc_codes": [
+        "15-2041.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "PST",
+      "sector": "Professional, Scientific, and Technical Services",
+      "occupation": "Technical Writers",
+      "onet_soc_code": "27-3042.00",
+      "onet_soc_codes": [
+        "27-3042.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "PST",
+      "sector": "Professional, Scientific, and Technical Services",
+      "occupation": "Training and Development Specialists",
+      "onet_soc_code": "13-1151.00",
+      "onet_soc_codes": [
+        "13-1151.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "RER",
+      "sector": "Real Estate and Rental and Leasing",
+      "occupation": "Concierges",
+      "onet_soc_code": "39-6012.00",
+      "onet_soc_codes": [
+        "39-6012.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "RER",
+      "sector": "Real Estate and Rental and Leasing",
+      "occupation": "Counter and Rental Clerks",
+      "onet_soc_code": "41-2021.00",
+      "onet_soc_codes": [
+        "41-2021.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "RER",
+      "sector": "Real Estate and Rental and Leasing",
+      "occupation": "Property, Real Estate, and Community Association Managers",
+      "onet_soc_code": "11-9141.00",
+      "onet_soc_codes": [
+        "11-9141.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "RER",
+      "sector": "Real Estate and Rental and Leasing",
+      "occupation": "Real Estate Brokers",
+      "onet_soc_code": "41-9021.00",
+      "onet_soc_codes": [
+        "41-9021.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "RER",
+      "sector": "Real Estate and Rental and Leasing",
+      "occupation": "Real Estate Sales Agents",
+      "onet_soc_code": "41-9022.00",
+      "onet_soc_codes": [
+        "41-9022.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "RET",
+      "sector": "Retail Trade",
+      "occupation": "First-Line Supervisors of Retail Sales Workers",
+      "onet_soc_code": "41-1011.00",
+      "onet_soc_codes": [
+        "41-1011.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "RET",
+      "sector": "Retail Trade",
+      "occupation": "General and Operations Managers",
+      "onet_soc_code": "11-1021.00",
+      "onet_soc_codes": [
+        "11-1021.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "RET",
+      "sector": "Retail Trade",
+      "occupation": "Online Merchants",
+      "onet_soc_code": "13-1199.06",
+      "onet_soc_codes": [
+        "13-1199.06"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "RET",
+      "sector": "Retail Trade",
+      "occupation": "Pharmacists",
+      "onet_soc_code": "29-1051.00",
+      "onet_soc_codes": [
+        "29-1051.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "RET",
+      "sector": "Retail Trade",
+      "occupation": "Private Detectives and Investigators",
+      "onet_soc_code": "33-9021.00",
+      "onet_soc_codes": [
+        "33-9021.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "WHL",
+      "sector": "Wholesale Trade",
+      "occupation": "First-Line Supervisors of Non-Retail Sales Workers",
+      "onet_soc_code": "41-1012.00",
+      "onet_soc_codes": [
+        "41-1012.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "WHL",
+      "sector": "Wholesale Trade",
+      "occupation": "Order Clerks",
+      "onet_soc_code": "43-4151.00",
+      "onet_soc_codes": [
+        "43-4151.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "WHL",
+      "sector": "Wholesale Trade",
+      "occupation": "Sales Managers",
+      "onet_soc_code": "11-2022.00",
+      "onet_soc_codes": [
+        "11-2022.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "WHL",
+      "sector": "Wholesale Trade",
+      "occupation": "Sales Representatives, Wholesale and Manufacturing, Except Technical and Scientific Products",
+      "onet_soc_code": "41-4012.00",
+      "onet_soc_codes": [
+        "41-4012.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "WHL",
+      "sector": "Wholesale Trade",
+      "occupation": "Sales Representatives, Wholesale and Manufacturing, Technical and Scientific Products",
+      "onet_soc_code": "41-4011.00",
+      "onet_soc_codes": [
+        "41-4011.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "WHL",
+      "sector": "Wholesale Trade",
+      "occupation": "Supply Chain Managers",
+      "onet_soc_code": "11-3071.04",
+      "onet_soc_codes": [
+        "11-3071.04"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "EDU",
+      "sector": "Educational Services",
+      "occupation": "Sociology Teachers, Postsecondary",
+      "onet_soc_code": "25-1067.00",
+      "onet_soc_codes": [
+        "25-1067.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    },
+    {
+      "sector_code": "MIN",
+      "sector": "Mining, Quarrying, and Oil and Gas Extraction",
+      "occupation": "Petroleum Engineers",
+      "onet_soc_code": "17-2171.00",
+      "onet_soc_codes": [
+        "17-2171.00"
+      ],
+      "mapping_kind": "exact_onet30_title"
+    }
+  ],
+  "notes": [
+    "Title/sector facts transcribed from WorkGenesis paper Table 2, arXiv 2609.39325v1.",
+    "The authors do not supply O*NET SOC mappings, the database version or the occupation playbook contents. These mappings were independently rebuilt from official O*NET 30.0 data.",
+    "64 titles match O*NET Occupation Data exactly. Buyers and Purchasing Agents is the SOC 13-1020 broad group with three detailed O*NET occupations, retained transparently as a group.",
+    "These mappings support reconstructed playbooks, not a claim that the authors original playbooks have been recovered."
+  ]
+}

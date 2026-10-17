@@ -1,0 +1,62 @@
+{
+  "source": "User-supplied WorkGenesis paper, arXiv2609.39325v1, Appendix D",
+  "extraction": "PDF text extraction; page labels removed; placeholders preserved. Formatting may differ from original.",
+  "files": [
+    {
+      "path": "stage_1_discovery.txt",
+      "pages": [
+        33,
+        35
+      ],
+      "sha256": "c09b21e2ae47d7a52f71d220f7b9db518aa51eeb0e24a5f8ce3fd5d282833a37"
+    },
+    {
+      "path": "stage_2a_companions.txt",
+      "pages": [
+        36,
+        38
+      ],
+      "sha256": "6272d4bc64a015ff2ed319498902b79a05cf7b6dff815ae404d3a155c107ee25"
+    },
+    {
+      "path": "stage_2b_task_rubric.txt",
+      "pages": [
+        38,
+        40
+      ],
+      "sha256": "cf695754fb51839f349cb7373f576974bfaa8d35c8c01fe67057e5bb8b24fcd3"
+    },
+    {
+      "path": "stage_3_solver.txt",
+      "pages": [
+        41,
+        42
+      ],
+      "sha256": "e244962d53bf884c8a22f0409a0574844d05f148b282d35e3575f964c1516077"
+    },
+    {
+      "path": "stage_4_scoring.txt",
+      "pages": [
+        42,
+        43
+      ],
+      "sha256": "f046a0742a39a23b7446e46185bef7501222a7bf316d8d9165cc021134cf6013"
+    },
+    {
+      "path": "stage_5_attribution.txt",
+      "pages": [
+        43,
+        45
+      ],
+      "sha256": "a2ec503f28939d68b764245ef3772245d9761d9ac746ea04a380ea74a8d36b9b"
+    },
+    {
+      "path": "stage_6_repair.txt",
+      "pages": [
+        45,
+        47
+      ],
+      "sha256": "55adc16af636fc58ba8e25ac0a9c09a99e106128f82fd5ec3303e0d4da4921bb"
+    }
+  ]
+}

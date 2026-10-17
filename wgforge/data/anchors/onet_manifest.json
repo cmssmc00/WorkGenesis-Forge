@@ -1,0 +1,170 @@
+{
+  "schema_version": 1,
+  "sources": [
+    {
+      "id": "onet30_occupations",
+      "path": "raw/63e6029d3d30ff5c7cf39b5304a733b77a409e01c65ae7095fe92f6d18d74a66.txt",
+      "url": "https://www.onetcenter.org/dl_files/database/db_30_0_text/Occupation%20Data.txt",
+      "final_url": "https://www.onetcenter.org/dl_files/database/db_30_0_text/Occupation%20Data.txt",
+      "sha256": "63e6029d3d30ff5c7cf39b5304a733b77a409e01c65ae7095fe92f6d18d74a66",
+      "bytes": 265794,
+      "title": "O*NET 30.0 Occupation Data",
+      "license": "CC-BY-4.0",
+      "rights_status": "approved",
+      "rights_basis": "Official O*NET Database license covers the downloadable database files and earlier versions; attribution and change notices retained.",
+      "rights_evidence": [
+        "https://www.onetcenter.org/license_db.html",
+        "https://creativecommons.org/licenses/by/4.0/"
+      ],
+      "attribution": "Includes information from O*NET 30.0 Database by the U.S. Department of Labor, Employment and Training Administration (USDOL/ETA). Used under CC BY 4.0. O*NET is a trademark of USDOL/ETA. Raw files are unmodified. Planning selection and deliverable mappings are WorkGenesis Forge modifications, not endorsed or tested by USDOL/ETA.",
+      "synthetic": false,
+      "provenance_kind": "exact-public",
+      "retrieved_at": "2026-10-13T11:09:08.354285+00:00",
+      "retrieval_method": "HTTPS curl through environment-provided egress proxy; TLS verification enabled; --fail, --proto =https, size/time bounded; exact response bytes retained",
+      "mime_type": "text/plain",
+      "rights_permissions": {
+        "training": true,
+        "redistribution": true,
+        "public_access": true
+      }
+    },
+    {
+      "id": "onet30_content_model",
+      "path": "raw/63773c0c4a8f7579c6e7c1ab12025cb73a0219c90962a9ca3233331c0bc39fd3.txt",
+      "url": "https://www.onetcenter.org/dl_files/database/db_30_0_text/Content%20Model%20Reference.txt",
+      "final_url": "https://www.onetcenter.org/dl_files/database/db_30_0_text/Content%20Model%20Reference.txt",
+      "sha256": "63773c0c4a8f7579c6e7c1ab12025cb73a0219c90962a9ca3233331c0bc39fd3",
+      "bytes": 91526,
+      "title": "O*NET 30.0 Content Model Reference",
+      "license": "CC-BY-4.0",
+      "rights_status": "approved",
+      "rights_basis": "Official O*NET Database license covers the downloadable database files and earlier versions; attribution and change notices retained.",
+      "rights_evidence": [
+        "https://www.onetcenter.org/license_db.html",
+        "https://creativecommons.org/licenses/by/4.0/"
+      ],
+      "attribution": "Includes information from O*NET 30.0 Database by the U.S. Department of Labor, Employment and Training Administration (USDOL/ETA). Used under CC BY 4.0. O*NET is a trademark of USDOL/ETA. Raw files are unmodified. Planning selection and deliverable mappings are WorkGenesis Forge modifications, not endorsed or tested by USDOL/ETA.",
+      "synthetic": false,
+      "provenance_kind": "exact-public",
+      "retrieved_at": "2026-10-13T11:09:05.450238+00:00",
+      "retrieval_method": "HTTPS curl through environment-provided egress proxy; TLS verification enabled; --fail, --proto =https, size/time bounded; exact response bytes retained",
+      "mime_type": "text/plain",
+      "rights_permissions": {
+        "training": true,
+        "redistribution": true,
+        "public_access": true
+      }
+    },
+    {
+      "id": "onet30_work_activities",
+      "path": "raw/c360f09974150f9e6553795c7f739178320967b56b6488a063f14068d4d8522e.txt",
+      "url": "https://www.onetcenter.org/dl_files/database/db_30_0_text/Work%20Activities.txt",
+      "final_url": "https://www.onetcenter.org/dl_files/database/db_30_0_text/Work%20Activities.txt",
+      "sha256": "c360f09974150f9e6553795c7f739178320967b56b6488a063f14068d4d8522e",
+      "bytes": 8749064,
+      "title": "O*NET 30.0 Work Activities",
+      "license": "CC-BY-4.0",
+      "rights_status": "approved",
+      "rights_basis": "Official O*NET Database license covers the downloadable database files and earlier versions; attribution and change notices retained.",
+      "rights_evidence": [
+        "https://www.onetcenter.org/license_db.html",
+        "https://creativecommons.org/licenses/by/4.0/"
+      ],
+      "attribution": "Includes information from O*NET 30.0 Database by the U.S. Department of Labor, Employment and Training Administration (USDOL/ETA). Used under CC BY 4.0. O*NET is a trademark of USDOL/ETA. Raw files are unmodified. Planning selection and deliverable mappings are WorkGenesis Forge modifications, not endorsed or tested by USDOL/ETA.",
+      "synthetic": false,
+      "provenance_kind": "exact-public",
+      "retrieved_at": "2026-10-13T11:13:03.798128+00:00",
+      "retrieval_method": "HTTPS curl through environment-provided egress proxy; TLS verification enabled; --fail, --proto =https, size/time bounded; exact response bytes retained",
+      "mime_type": "text/plain",
+      "rights_permissions": {
+        "training": true,
+        "redistribution": true,
+        "public_access": true
+      }
+    },
+    {
+      "id": "onet30_task_statements",
+      "path": "raw/663d8e7f0d85515160a9ce43a76a50b6932c9f4173d12e408348f8246d3c8cad.txt",
+      "url": "https://www.onetcenter.org/dl_files/database/db_30_0_text/Task%20Statements.txt",
+      "final_url": "https://www.onetcenter.org/dl_files/database/db_30_0_text/Task%20Statements.txt",
+      "sha256": "663d8e7f0d85515160a9ce43a76a50b6932c9f4173d12e408348f8246d3c8cad",
+      "bytes": 2762060,
+      "title": "O*NET 30.0 Task Statements",
+      "license": "CC-BY-4.0",
+      "rights_status": "approved",
+      "rights_basis": "Official O*NET Database license covers the downloadable database files and earlier versions; attribution and change notices retained.",
+      "rights_evidence": [
+        "https://www.onetcenter.org/license_db.html",
+        "https://creativecommons.org/licenses/by/4.0/"
+      ],
+      "attribution": "Includes information from O*NET 30.0 Database by the U.S. Department of Labor, Employment and Training Administration (USDOL/ETA). Used under CC BY 4.0. O*NET is a trademark of USDOL/ETA. Raw files are unmodified. Planning selection and deliverable mappings are WorkGenesis Forge modifications, not endorsed or tested by USDOL/ETA.",
+      "synthetic": false,
+      "provenance_kind": "exact-public",
+      "retrieved_at": "2026-10-15T10:30:24.590673+00:00",
+      "retrieval_method": "HTTPS urllib with TLS validation, timeout 60 seconds and explicit byte limit; exact official response bytes retained",
+      "mime_type": "text/plain",
+      "rights_permissions": {
+        "training": true,
+        "redistribution": true,
+        "public_access": true
+      },
+      "reference_purpose": "Occupation playbook source data; not generated task data"
+    },
+    {
+      "id": "onet30_technology_skills",
+      "path": "raw/fe7c37380174a03bea9c7138cddfb46d7c75d23a02d192b35bddab2b735d8fda.txt",
+      "url": "https://www.onetcenter.org/dl_files/database/db_30_0_text/Technology%20Skills.txt",
+      "final_url": "https://www.onetcenter.org/dl_files/database/db_30_0_text/Technology%20Skills.txt",
+      "sha256": "fe7c37380174a03bea9c7138cddfb46d7c75d23a02d192b35bddab2b735d8fda",
+      "bytes": 2594265,
+      "title": "O*NET 30.0 Technology Skills",
+      "license": "CC-BY-4.0",
+      "rights_status": "approved",
+      "rights_basis": "Official O*NET Database license covers the downloadable database files and earlier versions; attribution and change notices retained.",
+      "rights_evidence": [
+        "https://www.onetcenter.org/license_db.html",
+        "https://creativecommons.org/licenses/by/4.0/"
+      ],
+      "attribution": "Includes information from O*NET 30.0 Database by the U.S. Department of Labor, Employment and Training Administration (USDOL/ETA). Used under CC BY 4.0. O*NET is a trademark of USDOL/ETA. Raw files are unmodified. Planning selection and deliverable mappings are WorkGenesis Forge modifications, not endorsed or tested by USDOL/ETA.",
+      "synthetic": false,
+      "provenance_kind": "exact-public",
+      "retrieved_at": "2026-10-15T10:30:24.592460+00:00",
+      "retrieval_method": "HTTPS urllib with TLS validation, timeout 60 seconds and explicit byte limit; exact official response bytes retained",
+      "mime_type": "text/plain",
+      "rights_permissions": {
+        "training": true,
+        "redistribution": true,
+        "public_access": true
+      },
+      "reference_purpose": "Occupation playbook source data; not generated task data"
+    },
+    {
+      "id": "onet30_work_context",
+      "path": "raw/d52948bc8457192a56fbf40f96168dcbfcbb3a7bdd1c22b097ab02e833dea190.txt",
+      "url": "https://www.onetcenter.org/dl_files/database/db_30_0_text/Work%20Context.txt",
+      "final_url": "https://www.onetcenter.org/dl_files/database/db_30_0_text/Work%20Context.txt",
+      "sha256": "d52948bc8457192a56fbf40f96168dcbfcbb3a7bdd1c22b097ab02e833dea190",
+      "bytes": 36782933,
+      "title": "O*NET 30.0 Work Context",
+      "license": "CC-BY-4.0",
+      "rights_status": "approved",
+      "rights_basis": "Official O*NET Database license covers the downloadable database files and earlier versions; attribution and change notices retained.",
+      "rights_evidence": [
+        "https://www.onetcenter.org/license_db.html",
+        "https://creativecommons.org/licenses/by/4.0/"
+      ],
+      "attribution": "Includes information from O*NET 30.0 Database by the U.S. Department of Labor, Employment and Training Administration (USDOL/ETA). Used under CC BY 4.0. O*NET is a trademark of USDOL/ETA. Raw files are unmodified. Planning selection and deliverable mappings are WorkGenesis Forge modifications, not endorsed or tested by USDOL/ETA.",
+      "synthetic": false,
+      "provenance_kind": "exact-public",
+      "retrieved_at": "2026-10-15T10:30:24.612619+00:00",
+      "retrieval_method": "HTTPS urllib with TLS validation, timeout 60 seconds and explicit byte limit; exact official response bytes retained",
+      "mime_type": "text/plain",
+      "rights_permissions": {
+        "training": true,
+        "redistribution": true,
+        "public_access": true
+      },
+      "reference_purpose": "Occupation playbook source data; not generated task data"
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "status": "Reported recipe only; training not executed",
+  "source": "https://arxiv.org/html/2609.39325v1#A1.SS2",
+  "base_model": "Qwen3.6-35B-A3B",
+  "reference_model": "endless-frontier/Fx-Work",
+  "teacher": "GLM-5.2",
+  "trajectories": 20000,
+  "gpus": "32 NVIDIA H100",
+  "optimizer": "Adam",
+  "betas": [
+    0.9,
+    0.98
+  ],
+  "learning_rate": 5e-05,
+  "minimum_learning_rate": 1e-06,
+  "lr_schedule": "cosine",
+  "warmup_fraction": 0.1,
+  "weight_decay": 0.1,
+  "training_updates": 1537,
+  "packed_context_length": 256000,
+  "rollout_batch_size": 64,
+  "global_batch_size": 64,
+  "parallelism": {
+    "tensor": 1,
+    "pipeline": 2,
+    "context": 16,
+    "expert": 8,
+    "expert_tensor": 1
+  },
+  "recompute": {
+    "granularity": "full",
+    "method": "uniform",
+    "layers": 1
+  },
+  "unreleased": [
+    "framework and training code",
+    "token-level loss masks",
+    "optimizer epsilon",
+    "gradient clipping",
+    "full task/trajectory corpus",
+    "synthesis temperatures",
+    "exact harness image and commit"
+  ],
+  "not_equivalent_to": "recipes/train_sft.py (explicit smaller Transformers/PEFT adaptation)"
+}

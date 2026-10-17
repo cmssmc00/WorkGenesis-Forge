@@ -1,0 +1,3 @@
+# Preserve downloaded source bytes and manifest hashes on every platform.
+wgforge/data/anchors/raw/* -text -diff
+examples/anchors/raw/* -text -diff

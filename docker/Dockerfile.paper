@@ -1,0 +1,57 @@
+# Reconstructed from the disclosed environment, not the unpublished paper image.
+# Build explicitly with a Python 3.12 Debian image pinned by digest.
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
+USER root
+ENV DEBIAN_FRONTEND=noninteractive PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+ARG DEBIAN_MIRROR=
+# Optional local download routing; package signatures and repository paths stay intact.
+RUN python3 - <<'PY'
+import os
+import re
+from pathlib import Path
+from urllib.parse import urlsplit
+
+mirror = os.environ.get("DEBIAN_MIRROR", "")
+if mirror:
+    pattern = r"https?://(?:[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?\.)*[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?(?::[0-9]{1,5})?"
+    if not re.fullmatch(pattern, mirror):
+        raise ValueError("DEBIAN_MIRROR must be an HTTP(S) origin without credentials, path, query or fragment")
+    parsed = urlsplit(mirror)
+    if parsed.port is not None and not 1 <= parsed.port <= 65535:
+        raise ValueError("DEBIAN_MIRROR has an invalid port")
+    source = Path("/etc/apt/sources.list.d/debian.sources")
+    source.write_text(re.sub(r"http://deb\.debian\.org(?=/)", mirror, source.read_text()))
+PY
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    bash ca-certificates ffmpeg poppler-utils libreoffice fonts-dejavu-core \
+    tesseract-ocr ghostscript pandoc imagemagick texlive-latex-extra texlive-xetex \
+    texlive-fonts-recommended default-jre-headless chromium jq git libpango-1.0-0 \
+    libpangocairo-1.0-0 libcairo2 libgdk-pixbuf-2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+COPY docker/paper-requirements.txt /tmp/paper-requirements.txt
+ARG PIP_INDEX_URL
+# Keep optional pip routing after apt so completed system-package layers remain reusable.
+RUN python3 - <<'PY'
+import os
+import re
+from urllib.parse import urlsplit
+
+index = os.environ.get("PIP_INDEX_URL", "")
+if index:
+    pattern = r"https?://(?:[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?\.)+[A-Za-z](?:[A-Za-z0-9-]*[A-Za-z0-9])?(?::[0-9]{1,5})?/(?:pypi/)?simple/?"
+    if not re.fullmatch(pattern, index):
+        raise ValueError("PIP_INDEX_URL requires a public HTTP(S) DNS host and /simple or /pypi/simple, without credentials, query or fragment")
+    parsed = urlsplit(index)
+    if parsed.hostname.lower().endswith((".localhost", ".local", ".internal", ".test", ".invalid")):
+        raise ValueError("PIP_INDEX_URL must use a public package-index host")
+    if parsed.port is not None and not 1 <= parsed.port <= 65535:
+        raise ValueError("PIP_INDEX_URL has an invalid port")
+PY
+RUN python3 -m pip install --no-cache-dir -r /tmp/paper-requirements.txt \
+    && python3 -c 'import sys; assert sys.version_info[:2] == (3, 12)' \
+    && useradd --uid 1000 --create-home --shell /bin/bash worker \
+    && mkdir -p /workspace && chown 1000:1000 /workspace
+USER 1000:1000
+WORKDIR /workspace
+CMD ["sleep", "infinity"]

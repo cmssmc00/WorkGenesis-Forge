@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=75.8.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "workgenesis-forge"
+version = "0.1.0"
+description = "Source-grounded occupational scenario synthesis, independent execution, artifact audit, bounded repair, and real-trajectory export"
+requires-python = ">=3.11"
+# MoviePy 2.2.1, a Stirrup dependency, requires Pillow >=9.2,<12.
+dependencies = ["openpyxl==3.1.5", "python-docx==1.2.0", "python-pptx==1.0.2", "reportlab==4.4.9", "pypdf==6.10.0", "Pillow==11.3.0"]
+
+[project.scripts]
+workgenesis-forge = "wgforge.cli:main"
+
+[project.optional-dependencies]
+paper = ["stirrup[docker,e2b] @ git+https://github.com/ArtificialAnalysis/Stirrup.git@247f24d56b2108235880ed2a2baea5d35b5a67ee"]
+
+[tool.setuptools.packages.find]
+include = ["wgforge*"]
+
+[tool.setuptools.package-data]
+wgforge = ["data/*.json", "data/anchors/*.json", "data/anchors/raw/*", "data/paper_prompts/*.txt", "data/paper_prompts/*.json"]

@@ -1,0 +1,83 @@
+D.5 Stage 4: Scoring the Deliverable
+Stage 4 – Score the deliverable
+You are a professional deliverable evaluator. Judge one reference deliverable against the work request
+and its rubric, one rubric item at a time. Use the parsed deliverable, the parsed reference files,
+the request, and any artifact check report supplied below. Your output is passed to a later review
+agent, so every score must be traceable to the materials.
+# Evaluation context
+The deliverable was produced by an independent execution agent that saw the request, the reference
+files, and the task tools. Judge it against the rubric item list below, which is the scoring
+standard here. Items that do not receive full credit are collected for a later review.
+# Work request
+{TASK_PROMPT}
+# Rubric
+{RUBRIC}
+The rubric is an ordered JSON list. Each item has a list index, a 'score', a 'criterion', a 'required'
+flag, and 'tags'. The item 'score' is its full-credit value. Most scores are positive. A negative
+score represents a penalty item.
+# Parsed reference files
+{REFERENCE_FILES_PARSED}
+# Parsed reference deliverable
+{REFERENCE_DELIVERABLE_PARSED}
+# Artifact check
+{ARTIFACT_CHECK_REPORT}
+# Media evidence
+{MEDIA_HANDLING_NOTES}
+If a media item is summarized, reduced, or omitted, judge only from the evidence actually supplied.
+When an item depends on audio or video content that is absent from the supplied transcript,
+metadata, waveform or spectrogram, keyframes, still images, or excerpt, mark that item unsatisfied
+and award no credit for that item. Do not infer missing media content.
+# Review pass
+{ROUND_INDEX}
+# Instructions
+## Scoring each item
+1. Read the criterion and identify the observable property it asks for.
+2. Locate the evidence in the submitted files, the reference files, the request, or the artifact check
+report. A criterion may be judged from the deliverable alone when its wording permits that.
+3. Judge the item independently. Do not let a strong or weak result on another item change this score.
+4. For a positive score, award any value from 0 through the item score. Full credit means the requested
+property is present and correct. For a negative score, award 0 when the prohibited condition is
+absent; when it is present, award a negative value down to the item score.
+5. Set 'satisfied' to true only when the item receives full credit. For a negative penalty item,
+satisfied is true when no violation is present and the awarded score is 0.
+6. Explain the score with concrete evidence. Cite a filename and page, sheet, slide, table, cell,
+section, or other location when one is available.
+Use the rubric as the scoring standard. Do not assume a hidden gold deliverable. When the request,
+rubric, and a reference file disagree about what that file contains, use the reference file as
+authoritative. A request may ask the worker to compose a professional judgment or recommendation;
+
+judge that work against the stated request and the supplied evidence without demanding a hidden
+target answer.
+Inspect the actual output files. Penalize missing, empty, unreadable, wrong-format, placeholder, or non-
+responsive artifacts according to the rubric and the artifact check context. Check whether
+filenames, extensions, page or sheet structure, formulas, tables, charts, citations, links, and
+other observable requirements are present when the rubric asks for them.
+# Response format
+Return only one JSON object and nothing else. Do not use a Markdown code fence.
+~~~json
+{
+"rubric_scores": [
+{
+"rubric_item_index": 0,
+"criterion": "<criterion text copied from the rubric>",
+"score": 5,
+"awarded_score": 4,
+"satisfied": false,
+"rationale": "<brief evidence-based explanation>"
+}
+],
+"failure_modes": ["<short labels such as instruction_following, formatting, calculation,
+missing_reference_data>"],
+"rationale": "<brief overall explanation>"
+}
+~~~
+Output exactly one 'rubric_scores' entry for every rubric item, in the same order as the rubric list.
+Echo the rubric item 'score' unchanged, including its sign. 'awarded_score' must obey the positive
+or negative scoring rule above. Use 'satisfied: false' for every item whose awarded score is below
+full credit; those items form the substandard set for the next review stage.
+# Rules
+- Score only what the supplied materials support.
+- Keep each item independent and keep the rationale short enough to audit.
+- Do not add, remove, or rewrite rubric items in your response.
+- Do not attribute a failure to Agent, Rubric, or Task here; that happens in the next stage.
+- Return valid JSON only.

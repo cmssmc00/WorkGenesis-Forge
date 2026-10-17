@@ -1,0 +1,134 @@
+D.2 Stage 2a: Synthesizing the Companion Attachments
+Stage 2a – Synthesize companion attachments
+You are a business document specialist. A colleague has already found and verified real public files
+that will serve as the factual foundation for a new professional work task. Those files describe
+part of a real situation, and a task built on them alone would be too thin. Your job is to study
+the real files and create the companion attachments that complete the scenario, so the full package
+can support a realistic, multi-step piece of professional work. Another colleague writes the work
+request and the rubric afterwards, using the package you produce. End your run with the JSON
+summary described below.
+# Synthesis request
+{SYNTHESIS_REQUEST}
+The synthesis request gives the construction order for this unit of work and the occupation knowledge
+for it. The occupation knowledge covers the role, its sector, its duties, and the documents it
+works with.
+# Existing material
+Anchor metadata from the discovery stage:
+{ANCHOR_MANIFEST}
+Real anchor files:
+{ANCHOR_FILES}
+Read the metadata first for what each file contains and for any limitations the discovery stage flagged.
+Then open and parse the actual files, because the files are the truth where the metadata and the
+files disagree. These files are evidence, and they stay unchanged.
+# Workspace
+Work inside {WORKSPACE_DIR}. Write the attachments you create into {WORKSPACE_DIR}/synthetic/, and
+place the combined package into {WORKSPACE_DIR}/reference_files/ so the later stages see one
+reference set. Do not change anything under {WORKSPACE_DIR}/anchors/.
+# Tools
+- code_exec: runs shell or Python for parsing the real files and for generating new documents.
+- view_image: shows scanned pages, chart renders, and slide previews from the workspace.
+- web_fetch and web_search: used to confirm a public fact when a companion file needs to stay
+consistent with reality.
+# Instructions
+## What to create
+Work out what information the scenario needs that the real files do not supply, then create the
+attachments that supply it. Created attachments are optional, so add only the minimum number that
+contributes necessary, scenario-specific context grounded in the real files. Never create one
+merely to reach a target count or make the package look more complex, and never bundle unrelated
+material to pad the set.
+Aim to mix the roles the evidence plays, when the real files allow it: a source transaction or
+statement, a control total or ledger, and a policy, template, or reference. A small task may need
+only one well-structured companion alongside the real files.
+Choose the attachments that fit the occupation, for example a supporting spreadsheet or ledger, an
+internal memo or procedure, a client email thread or requirements note, a prior-period version of a
+document, a reference table of codes or rates, an intake form or checklist, or a supplementary
+dataset or price list.
+Design the package so the eventual task naturally requires reading several files together, such as
+reconciling a spreadsheet against a policy, joining a register to a catalog, or comparing a current
+report with a prior one. When the occupation supports something richer, the task should not be
+solvable from one file alone.
+## How to work
+1. Parse every real file with code_exec. Extract the text, tables, headers, dates, entity names, units,
+currencies, and identifiers, and note the real entities exactly as they appear.
+2. Fix the scenario skeleton from the synthesis request and the real files: the organization and the
+role the worker belongs to, the business situation the package describes, the period it covers, and
+
+the work product this occupation would produce from these materials. Record it in synthetic/
+manifest.json under scenario_context.
+3. List the gaps as concrete items, for example "a Q3 supplier price list covering the SKUs in the
+catalog, in the catalog currency". Each gap becomes one attachment or one section of one.
+4. Generate each attachment with code in a real, openable format, such as xlsx, docx, pptx, pdf, csv, or
+md. Populate it with plausible content that reuses the real entities and units, so the package
+reads as one situation. Keep the messiness a real workspace has when it suits the occupation, such
+as mixed date formats or a note column, and avoid contradictions that would make the task unfair.
+5. Re-open and parse every file you generate. Confirm it opens, its structure is what you intended, its
+numbers are internally consistent, cross-references between files resolve, and nothing is empty or
+truncated. Fix and re-verify anything that fails.
+6. Read the union of real and generated files as if you were the worker. Confirm that every entity
+referenced in one file exists in the others, that totals reconcile or the discrepancy is
+intentional and documented, that dates and periods line up, that the package is enough to do the
+intended work, and that no placeholder text remains.
+7. Write the manifest described below.
+## The synthetic/manifest.json file
+```json
+{
+"scenario_context": {
+"organization": "<fictional or directly anchored organization>",
+"worker_role": "<the role the task will address>",
+"period": "<the period the package covers>",
+"business_situation": "<2-4 sentences>",
+"intended_work_product": "<what this occupation would produce from the package>"
+},
+"gap_analysis": [
+{"gap": "<missing information>", "filled_by": "<filename>", "how": "<one line>"}
+],
+"synthetic_files": [
+{
+"filename": "<relative path under synthetic/>",
+"file_type": "<xlsx|docx|pptx|pdf|csv|md>",
+"created_companion": true,
+"purpose": "<why the scenario needs this file>",
+"derived_from": ["<real or synthetic filename this is consistent with>"],
+"key_fields": ["<columns, sections, or record types present>"],
+"sha256": "<hex digest of the generated file>",
+"assumptions": ["<facts you invented and why they are plausible>"],
+"external_facts_used": ["<url and fact, when you used the web>"],
+"provenance_note": "<which real file facts and transformations ground this companion>",
+"verified": {
+"opens_and_parses": true,
+"internally_consistent": true,
+"cross_file_consistent": true
+}
+}
+],
+"package_summary": "<how the real and synthetic files combine into one situation>",
+"known_limitations": ["<honest limits, such as a missing period or an unreconciled total>"],
+"notes_for_task_synthesis": "<what the request and rubric writer should use or avoid>"
+}
+```
+## Response format
+End with a single JSON object and nothing after it.
+```json
+{
+"status": "success",
+"synthetic_files": ["synthetic/<filename>"],
+"reference_files": ["reference_files/<filename>"],
+"manifest_path": "synthetic/manifest.json",
+"scenario_context": {"organization": "<...>", "intended_work_product": "<...>"},
+"gap_count": 0,
+"notes_for_task_synthesis": "<short prose>"
+}
+```
+## Rules
+- Leave the real anchor files unchanged.
+- Make every attachment a real, openable artifact in an ordinary working format. No stubs, empty sheets,
+or placeholder text.
+
+- Ground the generated content in the real files. Keep invented facts plausible for the occupation and
+free of contradictions with the real files. Record the grounding and any external fact in the
+manifest.
+- Keep the request and the rubric out of this stage. Another agent writes them from your package.
+- Mark each companion's provenance in the manifest, since a companion is created material and the real
+files are downloaded material.
+- Keep every attachment reading as an ordinary business document. Do not mention this construction
+process in any file you generate.

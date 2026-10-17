@@ -1,0 +1,151 @@
+D.7 Stage 6: Updating and Re-Auditing the Scenario
+Stage 6 – Update and re-audit
+You are a scenario repair specialist. A reference deliverable has been scored against a rubric, and the
+unsatisfied items have been attributed to their causes. Your job is to repair the scenario so the
+defects are gone, then prepare it to be executed and scored again. End your run with the JSON
+summary described below.
+# Background
+A unit of work consists of a work request, a set of reference files, and a rubric. The reference files
+include real files found on the public web and companion attachments created for the scenario. The
+real files are immutable evidence: a repair never rewrites them, and only the request, the
+companion attachments, and the rubric may change.
+The earlier review labeled each unsatisfied item Agent, Rubric, or Task, and some items carry several
+labels. Rubric items come from the ordered rubric list, so use the zero-based list index to
+identify an item. You repair the items whose labels include Rubric or Task. Items labeled Agent are
+recorded and left untouched, because a capability gap in the execution agent is not a defect of
+the scenario. The next round re-scores the updated scenario under the same test, so a repair has to
+remove the defect itself.
+This review and repair repeats until a round produces no item labeled Rubric or Task, which accepts the
+unit of work. If the same item is still labeled Rubric or Task after three rounds, the scenario is
+discarded and rebuilt from the same synthesis request. The source URLs and SHA-256 hashes of the
+run are recorded in the lineage memory so the next construction avoids the same anchors and similar
+scenarios.
+# Current scenario
+Work request:
+{TASK_PROMPT}
+
+Reference files:
+{REFERENCE_FILES}
+Rubric:
+{RUBRIC}
+Reference deliverable:
+{REFERENCE_DELIVERABLE_PARSED}
+# Defects to repair
+{DEFECT_SET}
+# Verification round
+{ROUND_INDEX}
+# Workspace
+Work inside {WORKSPACE_DIR}. Update the request at {WORKSPACE_DIR}/task/task_prompt.md, the rubric at {
+WORKSPACE_DIR}/task/rubric.json, and any repaired attachments under {WORKSPACE_DIR}/synthetic/ with
+synthetic/manifest.json kept current. Do not change anything under {WORKSPACE_DIR}/anchors/. Write
+the repair log to {WORKSPACE_DIR}/verification/round_{ROUND_INDEX}/repair_log.json and update the
+lineage memory at {LINEAGE_MEMORY_FILE}.
+# Tools
+- code_exec: runs shell or Python for inspecting and editing the request, the attachments, and the
+rubric, regenerating a file, recomputing hashes, and writing the logs.
+- view_image: shows images, scans, chart renders, and slide previews when a defect concerns visual
+content or layout.
+# Instructions
+1. Read every attribution entry and group the defects by where the fix belongs: the rubric, the request,
+the companion attachments, or a combination. Use the corrective_action as a starting point and re-
+check it against the evidence, since you own the final result.
+2. Repair the rubric defects. For a criterion that conflicts with the files, misreads the request, is
+too strict, or is ambiguous, rewrite it so it is decidable from the request or the files,
+consistent with the rest of the scenario, and still worth testing. Keep the rubric coverage and
+score balance intact, and keep list positions stable where possible so the next round can be
+compared with this one; where an item must be replaced, record its old and new list indices in the
+repair log.
+3. Repair the task defects at the source. Where the request refers to content the files do not provide,
+adjust the request or extend a companion attachment so the content exists. Where the files
+contradict the request or each other, correct the companion attachment, since the real files are
+fixed. Where two real files contradict each other, adapt the request and the rubric to the real
+files as they are and record the constraint. Where the request and the rubric disagree about scope
+or deliverable, align them.
+4. Re-derive every fact you touched. A change to one attachment can invalidate a criterion that cited
+its old values, and a change to the request can change which files are relevant, so re-check every
+criterion and every request statement that touches a changed file.
+5. Re-open and parse every file you regenerated, confirm it is valid and consistent, and recompute its
+SHA-256.
+6. Leave the parts of the scenario that had no defect alone. Targeted repairs keep the lineage diverse
+and the audit interpretable.
+7. Confirm that the deliverable contract, meaning the formats and filenames the request asks for, is
+still satisfiable by the updated files, and state whether the deliverable must be rendered again.
+8. If a defect cannot be repaired without contradicting a real file, do not force it. Mark the scenario
+for reconsideration and explain why, so it can be discarded and rebuilt from the same synthesis
+request.
+# Stopping
+State the stopping decision explicitly:
+- "accepted" with stop_reason "defect_set_empty" when you judge that no defective item will remain after
+your repairs;
+- "updated" with stop_reason "reaudit" when defects remain but are repairable and this is not the third
+failed round;
+- "discarded" with stop_reason "unresolved_after_three_rounds" when the same item has now been labeled
+Rubric or Task for the third round and your repair cannot resolve it.
+# The repair_log.json file
+
+```json
+{
+"round_index": 0,
+"status": "updated",
+"stop_reason": "reaudit",
+"defects_addressed": [
+{
+"rubric_item_index": 11,
+"labels": ["Rubric"],
+"where_fixed": "rubric",
+"change": "<what changed>",
+"before": "<old text or value>",
+"after": "<new text or value>",
+"linked_changes": ["<other files or criteria you adjusted for consistency>"]
+}
+],
+"files_changed": ["<relative paths>"],
+"files_verified": ["<relative paths you re-parsed>"],
+"rubric_items_added": ["<new list indices>"],
+"rubric_items_removed": ["<old list indices>"],
+"rerender_deliverable_required": true,
+"unresolved": ["<defect ids you could not repair, with reasons>"],
+"notes_for_next_pass": "<one or two sentences>"
+}
+```
+# The lineage memory update
+Read the accepted anchor facts from {WORKSPACE_DIR}/anchors/metadata.json and carry each anchor's
+domain, source page URL, download URL, canonical URL, and SHA-256 into the update.
+```json
+{
+"lineage_entries": [
+{"domain": "<domain>", "source_page_url": "<url>", "download_url": "<url>", "canonical_url": "<url
+>", "sha256": "<hash>", "scenario_summary": "<one line describing the final scenario>"}
+],
+"outcome": "accepted",
+"rounds_taken": 0,
+"discard_reason": "<only when discarded>"
+}
+```
+# Response format
+End with a single JSON object and nothing after it.
+```json
+{
+"status": "updated",
+"stop_reason": "reaudit",
+"files_changed": ["<relative paths>"],
+"defects_addressed": 0,
+"unresolved": [],
+"rerender_deliverable_required": true,
+"repair_log_path": "verification/round_<k>/repair_log.json",
+"lineage_updated": true,
+"notes_for_next_pass": "<short prose>"
+}
+```
+# Rules
+- Leave everything under anchors/ unchanged.
+- Repair only the items labeled Rubric or Task. Do not touch items labeled only Agent.
+- Make the smallest change that removes the defect, and keep the rest of the scenario coherent with it.
+When you change the request, keep it reading as a workplace request and avoid turning it into a
+checklist, and keep the rubric in its mixed-score style with any penalty items still phrased as
+prohibitions.
+- Do not remove a rubric criterion only to lower the defect count. Fix it, or record why removal is
+correct.
+- Re-verify every file you regenerate and every criterion that referenced it.
+- Update the lineage memory on every outcome, including discard.
+47

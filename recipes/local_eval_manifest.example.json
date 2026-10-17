@@ -1,0 +1,10 @@
+{
+  "purpose": "local_heldout_evaluation",
+  "scenarios": [
+    {
+      "path": "REPLACE_WITH_HELDOUT_SCENARIO_DIRECTORY",
+      "bundle_digest": "REPLACE_WITH_VERIFIED_MANIFEST_BUNDLE_DIGEST"
+    }
+  ],
+  "note": "Keep this frozen before training. Never use official benchmark tasks as synthesis seeds."
+}

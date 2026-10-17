@@ -1,0 +1,7 @@
+# Optional GPU environment only. Pin a tested architecture-compatible environment before a real experiment.
+# These are minimum interfaces used by train_sft.py, not the paper's unpublished lockfile.
+torch>=2.6
+transformers>=4.57
+datasets>=3.3
+accelerate>=1.3
+peft>=0.14
