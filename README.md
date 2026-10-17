@@ -43,6 +43,43 @@ The adapter requires Codex CLI **0.154.0 or newer**, its checked isolation/struc
 
 The repository retains Claude subscription, native Anthropic, and legacy OpenAI-compatible examples. They use their own adapters and setup; changing the current profile's `model` field does not switch providers. See [Codex details](docs/CODEX_SUBSCRIPTION.md), [Claude subscription](docs/CLAUDE_SUBSCRIPTION.md), and [native API setup](docs/PAPER_PIPELINE.md).
 
+### Changing the model or reasoning effort
+
+**A different model or effort currently requires code adaptation as well as configuration changes.** Even changing only `xhigh` to `high` is rejected by the current Codex profile. The instructions below describe the adaptation points; they do not imply that another combination has already been tested.
+
+1. Copy a profile, for example `cp configs/gpt6_astra_subscription_one.json configs/custom_model.json`. In the copy, update `roles.<role>.model` and `roles.<role>.effort` for **all eight roles**. Use the provider's exact model identifier and a reasoning level that the selected model and client support. For this bridge the JSON field is `effort`; it is translated into Codex's `model_reasoning_effort`. Do not add `reasoning_effort` as a role field. Supported levels vary by model/client, as described in the [official configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference).
+2. Adapt the implementation points below. The current adapter uses one global model/effort pair, so changing its constants also affects existing Codex profiles in that checkout. Use a separate Git branch or checkout for the experiment, or implement explicit per-profile selection with validation.
+3. Update the custom profile's description, requested-difference metadata, token/time limits, and rate estimates to match the experiment. Keep `paper_experiment` as the original paper's reported settings. A new model may require different context handling, structured-output parsing, image support, or tool-call handling; changing a name alone does not establish compatibility.
+4. Update the relevant regression tests, run preflight, then try **one task in a new output directory** before scaling up. Do not resume an old model's campaign with a changed configuration.
+
+| Location | What needs adaptation |
+| --- | --- |
+| [`wgforge/codex_subscription.py`](wgforge/codex_subscription.py) | `MODEL` / `EFFORT`, `validate_subscription_config()`, catalog capability checks, CLI arguments, event/model validation, and diagnostics. Preserve structured-action validation and tool isolation. |
+| [`wgforge/paper_profile.py`](wgforge/paper_profile.py) | `validate_paper_profile()` currently allows specific provider/model pairs and requires Codex `xhigh`; update these checks and the model-specific preflight description. The current paper profile also requires one model/provider across all roles. |
+| [`tests/test_codex_subscription.py`](tests/test_codex_subscription.py), [`tests/test_codex_subscription_pipeline.py`](tests/test_codex_subscription_pipeline.py) | Extend coverage for the intended model/effort, structured output, images, usage records, and incompatible settings. |
+| [`scripts/run_codex_subscription.sh`](scripts/run_codex_subscription.sh) | The convenience launcher always selects the original one-task config and prints GPT-6 Astra / xhigh. Update its config selection and messages, or use the explicit custom-config commands below. Its optional argument is a task count, not a model name. |
+
+Changing the model in the Codex desktop app, an interactive `/model` session, or your personal Codex config does **not** change this pipeline's selected model: the bridge ignores user configuration and passes its own model/effort explicitly.
+
+After completing the adaptation, with dependencies, local image, ChatGPT login, and `SERPAPI_API_KEY` already configured in the launching shell:
+
+```bash
+export WGFORGE_PAPER_IMAGE="$(docker image inspect --format '{{.Id}}' workgenesis-paper:local)"
+.venv/bin/python scripts/check_serpapi.py configs/custom_model.json
+.venv/bin/python -m wgforge preflight --config configs/custom_model.json --count 1
+```
+
+Inspect the preflight report and resolve pending requirements. Preflight does not prove live model access or successful task execution. Then start the one-task trial:
+
+```bash
+mkdir -p runs
+WG_CUSTOM_RUN="$(mktemp -d runs/custom-model-XXXXXXXX)"
+.venv/bin/python -m wgforge campaign \
+  --config configs/custom_model.json --count 1 --out "$WG_CUSTOM_RUN" --approve-live
+```
+
+**Switching providers is a separate adaptation.** For Claude, another API provider, or a local model, start from the corresponding provider configuration and review its authentication, request/response schema, reasoning controls, image/tool support, and paper-profile validation. ChatGPT subscription authentication is not interchangeable with an API key or a different provider's subscription. The retained legacy examples do not by themselves establish compatibility with the full `paper_v1` pipeline.
+
 ## Requirements
 
 - macOS or Linux, Bash, Git, and **Python 3.12** for the paper profile.
