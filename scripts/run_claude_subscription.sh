@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# One serial author-only campaign using Claude subscription, Opus 5.5 / max / fallback.
+# One serial author-only campaign using Claude subscription, Opus 5.5 / configured effort / fallback.
 set -euo pipefail
 
 task_project_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
@@ -140,8 +140,14 @@ sys.exit(0 if report.get("ready_for_operator_live_check") is True else 2)
 fi
 
 mkdir -p "$task_project_root/runs"
+# Effort as configured for the roles (shown in the banner and the new run directory name).
+task_effort="$("$task_python" -c '
+import json, sys
+efforts = {r.get("effort", "high") for r in json.load(open(sys.argv[1]))["roles"].values()}
+print(efforts.pop() if len(efforts) == 1 else "mixed")
+' "$task_config")"
 if [[ -z "$task_run_dir" ]]; then
-  task_run_dir="$(mktemp -d "$task_project_root/runs/opus55-max-author-only-serial-${task_count}-XXXXXXXX")"
+  task_run_dir="$(mktemp -d "$task_project_root/runs/opus55-${task_effort}-author-only-serial-${task_count}-XXXXXXXX")"
   "$task_python" -c '
 import json, sys
 from pathlib import Path
@@ -154,7 +160,7 @@ Path(sys.argv[2]).write_text(json.dumps(cfg,indent=2)+"\n")
 else
   printf 'Resuming existing campaign: %s\n' "$task_run_dir"
 fi
-printf 'One serial worker | Claude subscription | Opus 5.5 | max effort | target %s authored tasks\n' "$task_count"
+printf 'One serial worker | Claude subscription | Opus 5.5 | %s effort | target %s authored tasks\n' "$task_effort" "$task_count"
 echo 'Official fallback enabled: Opus 5 / Opus 4.8. Actual serving models are recorded.'
 echo 'Discovery, supporting files, task/rubric only. No solving, evaluation, revision or teacher.'
 echo 'Subscription limits still apply; no automatic campaign replay or API billing fallback.'

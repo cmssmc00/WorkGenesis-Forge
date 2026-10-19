@@ -451,7 +451,14 @@ class UnsuitableSource(ForgeError):
     """A retrieved anchor failed substantive source selection."""
 
 
-def validate_source_assessment(assessments, evidence, tool_inspection=None):
+def validate_source_assessment(assessments, evidence, tool_inspection=None, allow_unused=False):
+    """Validate the author's per-source verdicts.
+
+    By default any source judged unusable rejects the whole attempt. With
+    allow_unused, a source the author explicitly judged unusable (with a stated
+    reason) is tolerated as long as at least one source is fully usable; the
+    caller must then leave the unused source out of the package.
+    """
     by_id = {row["record"]["id"]: row for row in evidence}
     if not isinstance(assessments, list) or len(assessments) != len(by_id):
         raise UnsuitableSource("Author must inspect and judge every source before synthesis")
@@ -467,7 +474,15 @@ def validate_source_assessment(assessments, evidence, tool_inspection=None):
         if isinstance(operations, str):
             operations = assessment["professional_operations"] = [operations]
         if assessment.get("usable") is not True:
-            raise UnsuitableSource("A source was judged unusable for this profession/activity")
+            if not allow_unused:
+                raise UnsuitableSource("A source was judged unusable for this profession/activity")
+            reason = assessment.get("occupation_fit")
+            if assessment.get("usable") is not False or not isinstance(reason, str) or len(reason.strip()) < 40:
+                raise UnsuitableSource("An unused source needs an explicit usable=false verdict and a specific reason")
+            limitations = assessment.get("limitations")
+            if isinstance(limitations, list) and all(isinstance(item, str) for item in limitations):
+                assessment["limitations"] = "\n".join(item for item in limitations if item.strip())
+            continue
         if len(str(assessment.get("occupation_fit", ""))) < 40 or not isinstance(operations, list) or not operations or any(not isinstance(x, str) or len(x) < 15 for x in operations):
             raise UnsuitableSource("Source assessment lacks concrete occupational operations")
         exact_excerpt = isinstance(excerpt, str) and len(excerpt) >= 24 and excerpt in by_id[sid]["extracted_text"]
@@ -487,6 +502,8 @@ def validate_source_assessment(assessments, evidence, tool_inspection=None):
             assessment["limitations"] = "\n".join(limitations)
         if not isinstance(assessment.get("limitations"), str):
             raise UnsuitableSource("Source assessment must state coverage limitations")
+    if not any(assessment.get("usable") is True for assessment in assessments):
+        raise UnsuitableSource("A source was judged unusable for this profession/activity")
     return assessments
 
 

@@ -4,7 +4,7 @@
 
 Anthropic 官方说明，Claude Agent SDK、`claude -p` 和第三方应用可以使用订阅额度。订阅额度有使用限制，并不等于无限调用；是否允许额外付费用量还取决于账号设置。依据：[Use the Claude Agent SDK with your Claude plan](https://support.claude.com/en/articles/15036540-use-the-claude-agent-sdk-with-your-claude-plan)，2026-10-15 核对。
 
-## 当前入口：Opus 5.5 max，单路串行，只造题
+## 当前入口：Opus 5.5 xhigh，单路串行，只造题
 
 新配置 [`claude_opus55_subscription_serial.json`](../configs/claude_opus55_subscription_serial.json) 默认生成 **200 个新任务**，一个接一个运行。只执行 `researcher → companion_author → task_author`，不做题、不评分、不归因、不改题、不采集 teacher 轨迹；保留文件格式和来源等基础校验，结果标记为 `authored_unverified`。
 
@@ -19,7 +19,7 @@ bash scripts/run_claude_subscription.sh --resume runs/实际输出目录
 
 脚本检查本机 Docker 镜像及 SerpAPI，只有终端缺少 `SERPAPI_API_KEY` 时才提示隐藏输入。每次不带 `--resume` 都新建目录，不修改已有任务；不能用这个入口恢复原来的 Codex 并行批次。失败或额度耗尽仍会停止并保留输出，尚未完成的请求不会自动重复发送。
 
-所有角色预设为 `claude_subscription`、`claude-opus-5-5`、`effort: max`，只有前三个角色会运行。`subscription.fallback_models` 为 `claude-opus-5`、`claude-opus-4-8`，`switch_models_on_flag: true`。官方 CLI 处理过载/不可用时的备用模型链，以及有官方备用路由的内容标记；拒绝若未恢复仍停止。主模型和备用模型都沿用明确指定的 `max`。每次调用记录 `requested_model`、`provider_model`、`observed_models`、`fallback_used` 和 `cli_model_usage`。不改写为“全部由 Opus 5.5 完成”。
+所有角色预设为 `claude_subscription`、`claude-opus-5-5`、`effort: xhigh`，只有前三个角色会运行。`subscription.fallback_models` 为 `claude-opus-5`、`claude-opus-4-8`，`switch_models_on_flag: true`。官方 CLI 处理过载/不可用时的备用模型链，以及有官方备用路由的内容标记；拒绝若未恢复仍停止。主模型和备用模型都沿用明确指定的 `xhigh`。每次调用记录 `requested_model`、`provider_model`、`observed_models`、`fallback_used` 和 `cli_model_usage`。不改写为“全部由 Opus 5.5 完成”。
 
 fallback 不绕过5小时/每周订阅限额，不切换到 API 密钥计费。较高的本地累计预算只是防止旧工作量阈值提前停止，不代表真实订阅额度。此配置每角色累计上限沿用100万估算美元／10亿 token，campaign 沿用10亿估算美元／1万亿 token；API 等价实际用量以 CLI 返回的模型明细为准，含 fallback 用量。
 
@@ -44,7 +44,18 @@ fallback 不绕过5小时/每周订阅限额，不切换到 API 密钥计费。�
 
 因此，这条入口**保留论文公开的流程阶段，但不是论文或原生 Anthropic API 协议的逐字节复现**。模型、消息序列化、thinking 的保留方式和 CLI 内部重试都可能不同。保存的轨迹应标注 `claude_subscription`，不能当作作者原始 GLM-5.2 轨迹或原生 Anthropic API 消息直接混用。
 
-`subscription.max_turns_per_call = 3` 限制一次 CLI 调用内部的轮数，不是每个工作任务最多做三步。任务仍遵守原来的 Stirrup 步数、请求和总用量限制。
+`subscription.max_turns_per_call = 8` 限制一次 CLI 调用内部的轮数，不是每个工作任务最多做八步。任务仍遵守原来的 Stirrup 步数、请求和总用量限制。
+
+## 实测后的调整
+
+以下调整来自 2026-10-17/18 在一台 Mac 上的实际运行（只造题模式）：
+
+- **effort 由 `max` 改为 `xhigh`。** 四次 `max` 运行都没有完成任何任务：单次回复先后超过 32,768 与 64K 输出上限；上限提到 128K 后，一次调用的第一轮把 128,000 个输出 token 全部用于思考而被截断，随后整步超过时限。四次 `max` 运行的输出中约 90% 是隐藏思考。同一流程改用 `xhigh` 后，截至 2026-10-19 已完成 11 个任务，每个 40–137 分钟（中位数 77 分钟）。
+- **单次回复上限 `max_output_tokens` 32,768 → 128,000，`max_turns_per_call` 3 → 8，`timeout_seconds` 900 → 1800。** 任何一轮被截断的调用仍然整步拒绝，不会执行其中的动作。
+- **桥接层：** Claude Code 拒绝的原生工具尝试（如模型直接调用 `web_search`）不再使整次调用失败；系统提示要求模型把所有动作放进 StructuredOutput。其他任何可执行工具调用仍被拒绝。
+- **配套文件阶段：** 当附件作者明确判定某个来源不可用（`usable: false` 并给出具体理由）时，该来源被排除在任务包之外，而不是丢弃整次尝试；至少一个来源必须完整通过原有全部检查，任何以被排除来源为依据的附件仍使整次尝试被拒绝。
+- **依赖：** 增加 `cryptography`。pypdf 打开 AES 加密 PDF 需要它；缺少时会直接崩溃，而不是按项目规则把加密 PDF 判为不合适来源并重新寻找。
+- **启动脚本：** 新运行目录名和启动提示使用配置中的 effort（例如 `runs/opus55-xhigh-author-only-serial-…`）。
 
 ## 运行前需要什么
 

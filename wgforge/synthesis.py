@@ -183,13 +183,14 @@ def _recorded_visual_inspections(stage, receipt):
     return {"viewed_paths": viewed}
 
 
-def _validate_material_manifest(result, sources, evidence, tool_inspection=None):
+def _validate_material_manifest(result, sources, evidence, tool_inspection=None, allow_unused=False):
     from .workflow import validate_source_assessment
     if not isinstance(result, dict):
         raise ForgeError("Companion construction must return its private material manifest")
     if any(name in result for name in ("request", "rubric", "scenario")):
         raise ForgeError("Paper stage 2a must finish reference materials before the request/rubric is authored")
-    assessment = validate_source_assessment(result.get("source_assessment"), evidence, tool_inspection=tool_inspection)
+    assessment = validate_source_assessment(result.get("source_assessment"), evidence, tool_inspection=tool_inspection,
+                                            allow_unused=allow_unused)
     context = result.get("scenario_context")
     fields = ("organization", "worker_role", "period", "business_situation", "intended_work_product")
     if not isinstance(context, dict) or any(not isinstance(context.get(key), str) or not context[key].strip() for key in fields):
@@ -209,6 +210,36 @@ def _validate_material_manifest(result, sources, evidence, tool_inspection=None)
         if any(verified.get(key) is not True for key in ("opens_and_parses", "internally_consistent", "cross_file_consistent")):
             raise ForgeError("Companion creator must finish its parse and consistency checks before task authoring")
     return assessment
+
+
+def _drop_unused_sources(assessment, result, sources, evidence, input_files):
+    """Leave out sources the companion author itself judged unusable.
+
+    Several independently found anchors can describe unrelated organisations; the
+    author may then build one coherent scenario on the usable ones. Instead of
+    discarding all completed work, the unusable sources are removed from the
+    package handed to the task author and from the final bundle. A companion that
+    names an unused source as its basis keeps the original strict rejection.
+    """
+    from .workflow import UnsuitableSource
+    unused = {row["source_id"] for row in assessment if row.get("usable") is not True}
+    if not unused:
+        return sources, evidence, input_files
+    tokens = set()
+    for item in evidence:
+        record = item["record"]
+        if record["id"] in unused:
+            tokens |= {record["id"], item["path"], Path(record.get("path", "")).name, record.get("url", ""),
+                       record.get("final_url", ""), record.get("sha256", "")}
+    tokens.discard("")
+    for companion in result.get("companions", []):
+        basis = canonical(companion.get("derived_from", []))
+        if any(token in basis for token in tokens):
+            raise UnsuitableSource("A companion is derived from a source the author judged unusable")
+    dropped = {item["path"] for item in evidence if item["record"]["id"] in unused}
+    return ([source for source in sources if source["id"] not in unused],
+            [item for item in evidence if item["record"]["id"] not in unused],
+            {name: path for name, path in input_files.items() if name not in dropped})
 
 
 def author_paper_scenario(plan, source_manifest, manifest_base, out, config,
@@ -234,7 +265,9 @@ def author_paper_scenario(plan, source_manifest, manifest_base, out, config,
         "supported_native_formats": sorted(FORMATS)},
         out / "companions", campaign_root or out, input_files=input_files)
     assessment = _validate_material_manifest(made["result"], sources, evidence,
-                                             _recorded_visual_inspections(out / "companions", made["receipt"]))
+                                             _recorded_visual_inspections(out / "companions", made["receipt"]),
+                                             allow_unused=True)
+    sources, evidence, input_files = _drop_unused_sources(assessment, made["result"], sources, evidence, input_files)
     companions, parsed_companions = stage_native_companions(made["result"]["companions"], made.get("artifact_root"), intake)
     # Reparse the exact packet that will be handed to the task author. Generated
     # attachments are copied, never reconstructed from the language-model prose.

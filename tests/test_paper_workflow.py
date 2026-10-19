@@ -128,6 +128,69 @@ class PaperWorkflowTests(unittest.TestCase):
                 "external_facts_used": [], "provenance_note": "The catalog observation period grounds this work context.",
                 "verified": {"opens_and_parses": True, "internally_consistent": True, "cross_file_consistent": True}}
 
+    def add_unrelated_anchor(self):
+        source = deepcopy(self.manifest["sources"][0])
+        original = self.base / source["path"]
+        data = original.read_bytes() + b"# unrelated second snapshot\n"
+        digest_value = __import__("hashlib").sha256(data).hexdigest()
+        path = original.with_name(digest_value + original.suffix)
+        path.write_bytes(data)
+        source.update(id="unrelated_second_anchor", path=str(path.relative_to(self.base)), sha256=digest_value,
+                      bytes=len(data), url=source["url"] + "&unrelated=1", final_url=source["final_url"] + "&unrelated=1",
+                      title="Unrelated second snapshot")
+        self.manifest["sources"].append(source)
+        return source
+
+    def unused_assessment(self, source):
+        return {"source_id": source["id"], "usable": False,
+                "occupation_fit": "Real and relevant in general, but it describes a different organisation and period.",
+                "limitations": ["Not included in this package."]}
+
+    def test_source_judged_unusable_is_left_out_instead_of_discarding_finished_work(self):
+        second = self.add_unrelated_anchor()
+        seen = {}
+        def role(config, name, payload, stage_dir, campaign_root, input_files=None):
+            seen[name] = sorted(input_files)
+            if name == "companion_author":
+                self.assertEqual(len(payload["sources"]), 2)
+                result = self.material_result(payload)
+                result["source_assessment"].append(self.unused_assessment(second))
+                return {"result": result, "receipt": {}, "artifact_root": self.native}
+            self.assertEqual(len(payload["reference_files_parsed"]), 1)
+            return {"result": self.task_result(), "receipt": {}}
+        with patch("wgforge.workflow.json_role", side_effect=role):
+            output = author_scenario(self.plan, self.manifest, self.base, self.root / "generation", self.config)
+        self.assertEqual(len(seen["companion_author"]), 2)
+        self.assertEqual(seen["task_author"], ["anchors/usgs_earthquakes_oct2026_200.csv"])
+        doc = verify_bundle(output)
+        self.assertEqual([s["id"] for s in doc["anchor_sources"]], ["usgs_earthquakes_oct2026_200"])
+        self.assertFalse((output / "public" / "anchors" / ("unrelated_second_anchor.csv")).exists())
+        saved = read_json(self.root / "generation" / "source_assessment.json")
+        self.assertEqual([row["usable"] for row in saved["assessments"]], [True, False])
+        self.assertEqual(saved["source_hashes"], [self.manifest["sources"][0]["sha256"]])
+
+    def test_companion_built_on_an_unusable_source_still_rejects_the_attempt(self):
+        second = self.add_unrelated_anchor()
+        record = self.native_record()
+        record["derived_from"] = ["anchors/" + second["id"] + ".csv"]
+        def role(config, name, payload, stage_dir, campaign_root, input_files=None):
+            result = self.material_result(payload, [record])
+            result["source_assessment"].append(self.unused_assessment(second))
+            return {"result": result, "receipt": {}, "artifact_root": self.native}
+        with patch("wgforge.workflow.json_role", side_effect=role):
+            with self.assertRaisesRegex(UnsuitableSource, "derived from a source the author judged unusable"):
+                author_scenario(self.plan, self.manifest, self.base, self.root / "generation", self.config)
+
+    def test_all_sources_unusable_still_rejects_the_attempt(self):
+        second = self.add_unrelated_anchor()
+        def role(config, name, payload, stage_dir, campaign_root, input_files=None):
+            result = self.material_result(payload)
+            result["source_assessment"] = [self.unused_assessment(self.manifest["sources"][0]), self.unused_assessment(second)]
+            return {"result": result, "receipt": {}, "artifact_root": self.native}
+        with patch("wgforge.workflow.json_role", side_effect=role):
+            with self.assertRaisesRegex(UnsuitableSource, "judged unusable"):
+                author_scenario(self.plan, self.manifest, self.base, self.root / "generation", self.config)
+
     def test_zero_companions_still_runs_two_ordered_stages(self):
         calls = []
         def role(config, name, payload, stage_dir, campaign_root, input_files=None):

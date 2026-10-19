@@ -41,5 +41,51 @@ class SourceAssessmentTests(unittest.TestCase):
             validate_source_assessment(self.assessment, self.evidence)
 
 
+class UnusedSourceTests(unittest.TestCase):
+    """A second, unrelated anchor judged unusable no longer discards finished work."""
+
+    def setUp(self):
+        self.good = "Of the 16 milestones due in FY24-Q3, eleven were completed."
+        self.other = "Proposal Name: Environmental Review and Permitting Project"
+        self.evidence = [{"record": {"id": "good"}, "extracted_text": self.good},
+                         {"record": {"id": "other"}, "extracted_text": self.other}]
+        self.usable = {"source_id": "good", "usable": True,
+                       "occupation_fit": "Supports project-management work on milestones, procurement delays and dependencies.",
+                       "professional_operations": ["Monitor and reconcile milestone status"],
+                       "evidence_excerpt": self.good, "limitations": ["Historical snapshot."]}
+        self.unused = {"source_id": "other", "usable": False,
+                       "occupation_fit": "Fits the occupation generally but belongs to a different organisation and period.",
+                       "limitations": ["Not included in this package."]}
+
+    def test_default_still_rejects_any_unusable_source(self):
+        with self.assertRaisesRegex(UnsuitableSource, "judged unusable"):
+            validate_source_assessment([self.usable, self.unused], self.evidence)
+
+    def test_allow_unused_keeps_verdicts_and_normalizes_limitations(self):
+        result = validate_source_assessment([self.usable, self.unused], self.evidence, allow_unused=True)
+        self.assertEqual([row["usable"] for row in result], [True, False])
+        self.assertEqual(result[1]["limitations"], "Not included in this package.")
+
+    def test_allow_unused_still_needs_one_usable_source(self):
+        other = dict(self.unused, source_id="good")
+        with self.assertRaisesRegex(UnsuitableSource, "judged unusable"):
+            validate_source_assessment([other, self.unused], self.evidence, allow_unused=True)
+
+    def test_unused_source_needs_explicit_false_and_reason(self):
+        for change in ({"usable": None}, {"usable": "no"}, {"occupation_fit": "different org"}, {"occupation_fit": None}):
+            with self.subTest(change=change):
+                with self.assertRaisesRegex(UnsuitableSource, "explicit usable=false"):
+                    validate_source_assessment([self.usable, dict(self.unused, **change)], self.evidence, allow_unused=True)
+
+    def test_every_source_must_still_be_judged(self):
+        with self.assertRaisesRegex(UnsuitableSource, "judge every source"):
+            validate_source_assessment([self.usable], self.evidence, allow_unused=True)
+
+    def test_usable_sources_keep_full_evidence_checks(self):
+        bad = dict(self.usable, evidence_excerpt="Invented text that is not in the real source at all.")
+        with self.assertRaisesRegex(UnsuitableSource, "actual inspected source evidence"):
+            validate_source_assessment([bad, self.unused], self.evidence, allow_unused=True)
+
+
 if __name__ == "__main__":
     unittest.main()

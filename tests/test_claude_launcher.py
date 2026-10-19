@@ -30,13 +30,14 @@ class ClaudeLauncherTests(unittest.TestCase):
         record = json.loads((self.root / 'campaign.json').read_text())
         args = record['args']; cfg = json.loads(Path(args[args.index('--config') + 1]).read_text())
         self.assertEqual(args[args.index('--count') + 1], '200')
+        self.assertTrue(Path(args[args.index('--out') + 1]).name.startswith('opus55-xhigh-author-only-serial-200-'))
         self.assertEqual(cfg['campaign_mode'], 'author_only')
         self.assertFalse(cfg['trajectory_collection']['enabled'])
         self.assertFalse((self.root / 'parallel.json').exists())
         validate_paper_profile(cfg)
         for role in cfg['roles'].values():
             self.assertEqual((role['provider'], role['model'], role['effort']),
-                             ('claude_subscription', 'claude-opus-5-5', 'max'))
+                             ('claude_subscription', 'claude-opus-5-5', 'xhigh'))
 
     def test_resume_uses_saved_configuration_and_creates_no_second_run(self):
         first = self.run_launcher('3')
