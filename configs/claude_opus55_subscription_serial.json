@@ -28,7 +28,7 @@
     "researcher": {
       "provider": "claude_subscription",
       "model": "claude-opus-5-5",
-      "effort": "max",
+      "effort": "xhigh",
       "harness": "stirrup",
       "privacy": {
         "public_upload_approved": true,
@@ -42,12 +42,12 @@
         "max_requests": 256,
         "max_steps": 256,
         "max_input_tokens": 1200000,
-        "max_output_tokens": 32768,
+        "max_output_tokens": 128000,
         "max_total_tokens": 1000000000,
         "cache_write_5m_usd_per_million": 5.0,
         "cache_write_1h_usd_per_million": 8.0
       },
-      "timeout_seconds": 900,
+      "timeout_seconds": 1800,
       "max_run_seconds": 14400,
       "max_retries": 0,
       "max_response_bytes": 16000000,
@@ -77,7 +77,7 @@
       },
       "subscription": {
         "executable": "claude",
-        "max_turns_per_call": 3,
+        "max_turns_per_call": 8,
         "fallback_models": [
           "claude-opus-5",
           "claude-opus-4-8"
@@ -88,7 +88,7 @@
     "companion_author": {
       "provider": "claude_subscription",
       "model": "claude-opus-5-5",
-      "effort": "max",
+      "effort": "xhigh",
       "harness": "stirrup",
       "privacy": {
         "public_upload_approved": true,
@@ -102,12 +102,12 @@
         "max_requests": 256,
         "max_steps": 256,
         "max_input_tokens": 1200000,
-        "max_output_tokens": 32768,
+        "max_output_tokens": 128000,
         "max_total_tokens": 1000000000,
         "cache_write_5m_usd_per_million": 5.0,
         "cache_write_1h_usd_per_million": 8.0
       },
-      "timeout_seconds": 900,
+      "timeout_seconds": 1800,
       "max_run_seconds": 14400,
       "max_retries": 0,
       "max_response_bytes": 16000000,
@@ -137,7 +137,7 @@
       },
       "subscription": {
         "executable": "claude",
-        "max_turns_per_call": 3,
+        "max_turns_per_call": 8,
         "fallback_models": [
           "claude-opus-5",
           "claude-opus-4-8"
@@ -148,7 +148,7 @@
     "task_author": {
       "provider": "claude_subscription",
       "model": "claude-opus-5-5",
-      "effort": "max",
+      "effort": "xhigh",
       "harness": "stirrup",
       "privacy": {
         "public_upload_approved": true,
@@ -162,12 +162,12 @@
         "max_requests": 256,
         "max_steps": 256,
         "max_input_tokens": 1200000,
-        "max_output_tokens": 32768,
+        "max_output_tokens": 128000,
         "max_total_tokens": 1000000000,
         "cache_write_5m_usd_per_million": 5.0,
         "cache_write_1h_usd_per_million": 8.0
       },
-      "timeout_seconds": 900,
+      "timeout_seconds": 1800,
       "max_run_seconds": 14400,
       "max_retries": 0,
       "max_response_bytes": 16000000,
@@ -197,7 +197,7 @@
       },
       "subscription": {
         "executable": "claude",
-        "max_turns_per_call": 3,
+        "max_turns_per_call": 8,
         "fallback_models": [
           "claude-opus-5",
           "claude-opus-4-8"
@@ -208,7 +208,7 @@
     "solver": {
       "provider": "claude_subscription",
       "model": "claude-opus-5-5",
-      "effort": "max",
+      "effort": "xhigh",
       "harness": "stirrup",
       "privacy": {
         "public_upload_approved": true,
@@ -222,12 +222,12 @@
         "max_requests": 256,
         "max_steps": 256,
         "max_input_tokens": 1200000,
-        "max_output_tokens": 32768,
+        "max_output_tokens": 128000,
         "max_total_tokens": 1000000000,
         "cache_write_5m_usd_per_million": 5.0,
         "cache_write_1h_usd_per_million": 8.0
       },
-      "timeout_seconds": 900,
+      "timeout_seconds": 1800,
       "max_run_seconds": 14400,
       "max_retries": 0,
       "max_response_bytes": 16000000,
@@ -257,7 +257,7 @@
       },
       "subscription": {
         "executable": "claude",
-        "max_turns_per_call": 3,
+        "max_turns_per_call": 8,
         "fallback_models": [
           "claude-opus-5",
           "claude-opus-4-8"
@@ -268,7 +268,7 @@
     "judge": {
       "provider": "claude_subscription",
       "model": "claude-opus-5-5",
-      "effort": "max",
+      "effort": "xhigh",
       "harness": "stirrup",
       "privacy": {
         "public_upload_approved": true,
@@ -282,12 +282,12 @@
         "max_requests": 256,
         "max_steps": 256,
         "max_input_tokens": 1200000,
-        "max_output_tokens": 32768,
+        "max_output_tokens": 128000,
         "max_total_tokens": 1000000000,
         "cache_write_5m_usd_per_million": 5.0,
         "cache_write_1h_usd_per_million": 8.0
       },
-      "timeout_seconds": 900,
+      "timeout_seconds": 1800,
       "max_run_seconds": 14400,
       "max_retries": 0,
       "max_response_bytes": 16000000,
@@ -317,7 +317,7 @@
       },
       "subscription": {
         "executable": "claude",
-        "max_turns_per_call": 3,
+        "max_turns_per_call": 8,
         "fallback_models": [
           "claude-opus-5",
           "claude-opus-4-8"
@@ -328,7 +328,7 @@
     "attributor": {
       "provider": "claude_subscription",
       "model": "claude-opus-5-5",
-      "effort": "max",
+      "effort": "xhigh",
       "harness": "stirrup",
       "privacy": {
         "public_upload_approved": true,
@@ -342,12 +342,12 @@
         "max_requests": 256,
         "max_steps": 256,
         "max_input_tokens": 1200000,
-        "max_output_tokens": 32768,
+        "max_output_tokens": 128000,
         "max_total_tokens": 1000000000,
         "cache_write_5m_usd_per_million": 5.0,
         "cache_write_1h_usd_per_million": 8.0
       },
-      "timeout_seconds": 900,
+      "timeout_seconds": 1800,
       "max_run_seconds": 14400,
       "max_retries": 0,
       "max_response_bytes": 16000000,
@@ -377,7 +377,7 @@
       },
       "subscription": {
         "executable": "claude",
-        "max_turns_per_call": 3,
+        "max_turns_per_call": 8,
         "fallback_models": [
           "claude-opus-5",
           "claude-opus-4-8"
@@ -388,7 +388,7 @@
     "repairer": {
       "provider": "claude_subscription",
       "model": "claude-opus-5-5",
-      "effort": "max",
+      "effort": "xhigh",
       "harness": "stirrup",
       "privacy": {
         "public_upload_approved": true,
@@ -402,12 +402,12 @@
         "max_requests": 256,
         "max_steps": 256,
         "max_input_tokens": 1200000,
-        "max_output_tokens": 32768,
+        "max_output_tokens": 128000,
         "max_total_tokens": 1000000000,
         "cache_write_5m_usd_per_million": 5.0,
         "cache_write_1h_usd_per_million": 8.0
       },
-      "timeout_seconds": 900,
+      "timeout_seconds": 1800,
       "max_run_seconds": 14400,
       "max_retries": 0,
       "max_response_bytes": 16000000,
@@ -437,7 +437,7 @@
       },
       "subscription": {
         "executable": "claude",
-        "max_turns_per_call": 3,
+        "max_turns_per_call": 8,
         "fallback_models": [
           "claude-opus-5",
           "claude-opus-4-8"
@@ -448,7 +448,7 @@
     "teacher": {
       "provider": "claude_subscription",
       "model": "claude-opus-5-5",
-      "effort": "max",
+      "effort": "xhigh",
       "harness": "stirrup",
       "privacy": {
         "public_upload_approved": true,
@@ -462,12 +462,12 @@
         "max_requests": 256,
         "max_steps": 256,
         "max_input_tokens": 1200000,
-        "max_output_tokens": 32768,
+        "max_output_tokens": 128000,
         "max_total_tokens": 1000000000,
         "cache_write_5m_usd_per_million": 5.0,
         "cache_write_1h_usd_per_million": 8.0
       },
-      "timeout_seconds": 900,
+      "timeout_seconds": 1800,
       "max_run_seconds": 14400,
       "max_retries": 0,
       "max_response_bytes": 16000000,
@@ -497,7 +497,7 @@
       },
       "subscription": {
         "executable": "claude",
-        "max_turns_per_call": 3,
+        "max_turns_per_call": 8,
         "fallback_models": [
           "claude-opus-5",
           "claude-opus-4-8"

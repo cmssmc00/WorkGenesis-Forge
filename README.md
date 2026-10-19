@@ -4,7 +4,7 @@ A research pipeline for generating source-grounded workplace tasks, testing them
 
 It implements the disclosed stages of [WorkGenesis](https://arxiv.org/abs/2609.39325), with documented substitutions for the model, model transport, occupation playbooks, and execution environment. It is an independent implementation, not the authors' official code or an exact reproduction of their training and benchmark results.
 
-**Current author-only entry point: Claude Opus 5.5 with `max` effort and official CLI fallback, through your own Claude subscription.** One serial worker generates 200 new tasks by default. Existing GPT-6 Astra/Codex and full-pipeline entry points remain available below.
+**Current author-only entry point: Claude Opus 5.5 with `xhigh` effort and official CLI fallback, through your own Claude subscription.** One serial worker generates 200 new tasks by default. Existing GPT-6 Astra/Codex and full-pipeline entry points remain available below.
 
 ```bash
 claude auth login
@@ -13,7 +13,7 @@ bash scripts/run_claude_subscription.sh
 
 The launcher checks Docker and SerpAPI (prompts for the search key only if it is missing), then runs only `researcher → companion_author → task_author`. It does not solve, evaluate, revise tasks, or collect teacher trajectories. Saved tasks are `authored_unverified`. Set a different new-task target with `bash scripts/run_claude_subscription.sh 10`. Each new launch uses a fresh output directory and preserves existing runs. Resume a serial Claude campaign with `bash scripts/run_claude_subscription.sh --resume RUN_DIRECTORY`; this does not import or resume an old Codex parallel batch.
 
-Configuration: [`configs/claude_opus55_subscription_serial.json`](configs/claude_opus55_subscription_serial.json). The primary model is `claude-opus-5-5`, effort is `max`, and allowed fallback models are Opus 5 and Opus 4.8. Both official availability fallback and automatic flagged-request fallback are enabled; actual observed models and per-model usage are saved. Subscription quota, authentication, and network failures are not bypassed by fallback. See [Claude subscription setup](docs/CLAUDE_SUBSCRIPTION.md).
+Configuration: [`configs/claude_opus55_subscription_serial.json`](configs/claude_opus55_subscription_serial.json). The primary model is `claude-opus-5-5`, effort is `xhigh` (see [why not `max`](docs/CLAUDE_SUBSCRIPTION.md#实测后的调整)), and allowed fallback models are Opus 5 and Opus 4.8. Both official availability fallback and automatic flagged-request fallback are enabled; actual observed models and per-model usage are saved. Subscription quota, authentication, and network failures are not bypassed by fallback. See [Claude subscription setup](docs/CLAUDE_SUBSCRIPTION.md).
 
 ## Pipeline
 

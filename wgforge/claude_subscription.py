@@ -39,7 +39,10 @@ object matching its supplied schema. The external runtime, not this CLI, execute
 these actions and supplies their results on the next invocation. Use only named
 external tools, including finish or abandon when appropriate. Never claim an
 action has executed before its result appears in the conversation. Do not use
-Claude Code built-in tools or MCP tools. Any native StructuredOutput call is only
+Claude Code built-in tools or MCP tools. The external tool names in the transcript
+(for example code_exec, web_fetch, web_search, view_image, finish) are not native
+tools here: never call them directly; put every requested action inside the
+StructuredOutput tool_calls list. Any native StructuredOutput call is only
 the internal response-format mechanism, not a workplace action. Native images
 following the transcript are identified by explicit image references inside it.
 Opaque native thinking/signature blocks are not replayed by this bridge.
@@ -350,6 +353,21 @@ def _inspect_events(events, config):
         raise SubscriptionError("Claude CLI stream lacks a unique model identity, assistant response or final result.")
     if initial[0].get("mcp_servers") or any(name != "StructuredOutput" for name in initial[0].get("tools", [])):
         raise SubscriptionError("Claude CLI unexpectedly enabled executable tools or MCP servers.")
+    # The CLI is launched with no executable tools (verified above). If the model
+    # nevertheless emits a native call to an external tool name, the CLI refuses it
+    # with a tool_use_error and nothing runs; only such refused attempts are tolerated.
+    refused = {}
+    for item in events:
+        content = item.get("message", {}).get("content") if item.get("type") == "user" else None
+        for block in content if isinstance(content, list) else []:
+            if not isinstance(block, dict) or block.get("type") != "tool_result" or block.get("is_error") is not True:
+                continue
+            text = block.get("content")
+            if isinstance(text, list):
+                text = " ".join(part.get("text", "") for part in text if isinstance(part, dict))
+            if isinstance(text, str) and "No such tool available" in text and isinstance(block.get("tool_use_id"), str):
+                refused[block["tool_use_id"]] = text
+    refused_attempts = {}
     by_id = {}
     for position, item in enumerate(events):
         if item.get("type") != "assistant":
@@ -364,7 +382,9 @@ def _inspect_events(events, config):
             if not isinstance(block, dict):
                 raise SubscriptionError("Claude CLI assistant content is malformed.")
             if block.get("type") == "tool_use" and block.get("name") != "StructuredOutput":
-                raise SubscriptionError("Claude CLI attempted an executable tool; only external Stirrup actions are allowed.")
+                if block.get("id") not in refused:
+                    raise SubscriptionError("Claude CLI attempted an executable tool; only external Stirrup actions are allowed.")
+                refused_attempts[block["id"]] = block.get("name")
         if assistant.get("stop_reason") in {"refusal", "pause_turn", "max_tokens", "model_context_window_exceeded"}:
             incomplete.append((position, assistant["model"], assistant["stop_reason"]))
         by_id[assistant["id"]] = assistant
@@ -434,7 +454,8 @@ def _inspect_events(events, config):
                     "cli_internal_turns": internal_turns, "observed_model_requests": len(by_id),
                     "provider_model": assistants[-1]["model"], "observed_models": sorted(observed_models),
                     "fallback_used": bool(observed_models - {MODEL}),
-                    "reported_cost_usd": cost, "cli_model_usage": copy.deepcopy(model_usage)}
+                    "reported_cost_usd": cost, "cli_model_usage": copy.deepcopy(model_usage),
+                    "refused_native_tool_attempts": sorted(str(name) for name in refused_attempts.values())}
 
 
 def _action_message(value, allowed, invocation):
